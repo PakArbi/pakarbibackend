@@ -81,7 +81,7 @@ func LoginUserEmail(Privatekey, MongoEnv, dbname, Colname string, r *http.Reques
 				resp.Message = "Gagal Encode Token : " + err.Error()
 			} else {
 				resp.Status = true
-				resp.Message = "Selamat Datang Admin"
+				resp.Message = "Selamat Datang User"
 				resp.Token = tokenstring
 			}
 		} else {
