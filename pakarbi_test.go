@@ -18,7 +18,7 @@ func TestCreateNewUserRole(t *testing.T) {
 	userdata.PasswordHash = "pakarbipass"
 	userdata.Email = "1214000@std.ulbi.ac.id"
 	userdata.Role = "user"
-	mconn := SetConnection("MONGOSTRING", "PakArbiapp")
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	CreateNewUserRole(mconn, "user", userdata)
 }
 
@@ -40,7 +40,7 @@ func CreateNewUserToken(t *testing.T) {
 	userdata.Role = "user"
 
 	// Create a MongoDB connection
-	mconn := SetConnection("MONGOSTRING", "PakArbiapp")
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 
 	// Call the function to create a admin and generate a token
 	err := CreateUserAndAddToken("your_private_key_env", mconn, "user", userdata)
@@ -51,7 +51,7 @@ func CreateNewUserToken(t *testing.T) {
 }
 
 func TestGFCPostHandlerUser(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "PakArbiapp")
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	var userdata User
 	userdata.UsernameId = "D4TI1214000"
 	userdata.Username = "pakarbi"
@@ -64,7 +64,7 @@ func TestGFCPostHandlerUser(t *testing.T) {
 }
 
 func TestParkiran(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "PakArbiapp")
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	var parkirandata Parkiran
 	parkirandata.ParkiranId = "D4TI150CC"
 	parkirandata.Nama = "Farhan Rizki Maulana"
@@ -77,7 +77,7 @@ func TestParkiran(t *testing.T) {
 }
 
 func TestAllParkiran(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "PakArbiapp")
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	parkiran := GetAllParkiran(mconn, "parkiran")
 	fmt.Println(parkiran)
 }
@@ -100,7 +100,7 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 }
 
 func TestHashFunction(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "PakArbiapp")
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	var userdata User
 	userdata.UsernameId = "D4TI1214000"
 	userdata.Username = "pakarbi"
@@ -117,7 +117,7 @@ func TestHashFunction(t *testing.T) {
 }
 
 func TestIsPasswordValid(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "PakArbiapp")
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	var userdata User
 	userdata.UsernameId = "D4TI1214000"
 	userdata.Username = "pakarbi"
@@ -128,7 +128,7 @@ func TestIsPasswordValid(t *testing.T) {
 }
 
 func TestUserFix(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "pasabarapk")
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	var userdata User
 	userdata.UsernameId = "D4TI1214000"
 	userdata.Username = "pakarbi"
