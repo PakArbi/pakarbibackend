@@ -122,6 +122,38 @@ func Register(Mongoenv, dbname string, r *http.Request) string {
 	return response
 }
 
+// <--- FUNCTION ADMIN --->
+func LoginAdmin(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string {
+	var resp Credential
+	mconn := SetConnection(MongoEnv, dbname)
+	var dataadmin Admin
+	err := json.NewDecoder(r.Body).Decode(&dataadmin)
+	if err != nil {
+		resp.Message = "error parsing application/json: " + err.Error()
+	} else {
+		validator := NewEmailValidator()
+		if !validator.IsValid(dataadmin.Email) {
+			resp.Message = "Email is not valid"
+			response := GCFReturnStruct(resp)
+			return response
+		}
+
+		if IsPasswordValidAdmin(mconn, Colname, dataadmin) {
+			tokenstring, err := watoken.Encode(dataadmin.Email, os.Getenv(Privatekey))
+			if err != nil {
+				resp.Message = "Gagal Encode Token : " + err.Error()
+			} else {
+				resp.Status = true
+				resp.Message = "Selamat Datang Admin"
+				resp.Token = tokenstring
+			}
+		} else {
+			resp.Message = "Password Salah"
+		}
+	}
+	return GCFReturnStruct(resp)
+}
+
 // <--- FUNCTION PARKIRAN --->
 func GCFInsertParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
