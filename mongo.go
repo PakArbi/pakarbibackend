@@ -128,6 +128,22 @@ func InsertAdmindata(MongoConn *mongo.Database, usernameid, username, password, 
 	return InsertOneDoc(MongoConn, "admin", req)
 }
 
+func IsPasswordValidEmailAdmin(mongoconn *mongo.Database, collection string, admindata Admin) bool {
+	filter := bson.M{
+		"$or": []bson.M{
+			{"email": admindata.Email},
+		},
+	}
+
+	var res Admin
+	err := mongoconn.Collection(collection).FindOne(context.TODO(), filter).Decode(&res)
+
+	if err == nil {
+		return CheckPasswordHash(admindata.PasswordHash, res.PasswordHash)
+	}
+	return false
+}
+
 func DeleteAdmin(mongoconn *mongo.Database, collection string, admindata Admin) interface{} {
 	filter := bson.M{"email": admindata.Email}
 	return atdb.DeleteOneDoc(mongoconn, collection, filter)

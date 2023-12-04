@@ -25,28 +25,30 @@ func (v *EmailValidator) IsValid(email string) bool {
 }
 
 // <--- FUNCTION LOGIN USER --->
-func LoginUserNPM(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string {
-	var resp Credential
-	mconn := SetConnection(MongoEnv, dbname)
+func LoginUserNPM(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response Credential
+	Response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		resp.Message = "error parsing application/json: " + err.Error()
+		Response.Message = "error parsing application/json: " + err.Error()
 	} else {
-		if IsPasswordValidNPM(mconn, Colname, datauser) {
-			tokenstring, err := watoken.Encode(datauser.NPM, os.Getenv(Privatekey))
+		if IsPasswordValidNPM(mconn, collectionname, datauser) {
+			Response.Status = true
+			tokenstring, err := watoken.Encode(datauser.NPM, os.Getenv(PASETOPRIVATEKEYENV))
 			if err != nil {
-				resp.Message = "Gagal Encode Token : " + err.Error()
+				Response.Message = "Gagal Encode Token : " + err.Error()
 			} else {
-				resp.Status = true
-				resp.Message = "Selamat Datang User"
-				resp.Token = tokenstring
+				Response.Message = "Selamat Datang"
+				Response.Token = tokenstring
 			}
 		} else {
-			resp.Message = "Password Salah"
+			Response.Message = "NPM atau Password Salah"
 		}
 	}
-	return GCFReturnStruct(resp)
+
+	return GCFReturnStruct(Response)
 }
 
 // return struct
@@ -60,35 +62,38 @@ func ReturnStringStruct(Data any) string {
 	return string(jsonee)
 }
 
-func LoginUserEmail(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string {
-	var resp Credential
-	mconn := SetConnection(MongoEnv, dbname)
+func LoginUserEmail(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response Credential
+	Response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		resp.Message = "error parsing application/json: " + err.Error()
+		Response.Message = "error parsing application/json: " + err.Error()
 	} else {
+		// Validasi email harus menggunakan npm@std.ulbi.ac.id sesuai dengan email kampus didaftarkan sebelum melakukan login
 		validator := NewEmailValidator()
 		if !validator.IsValid(datauser.Email) {
-			resp.Message = "Email is not valid"
-			response := GCFReturnStruct(resp)
+			Response.Message = "Email is not valid"
+			response := GCFReturnStruct(Response)
 			return response
 		}
 
-		if IsPasswordValidEmail(mconn, Colname, datauser) {
-			tokenstring, err := watoken.Encode(datauser.Email, os.Getenv(Privatekey))
+		if IsPasswordValidEmail(mconn, collectionname, datauser) {
+			Response.Status = true
+			tokenstring, err := watoken.Encode(datauser.Email, os.Getenv(PASETOPRIVATEKEYENV))
 			if err != nil {
-				resp.Message = "Gagal Encode Token : " + err.Error()
+				Response.Message = "Gagal Encode Token : " + err.Error()
 			} else {
-				resp.Status = true
-				resp.Message = "Selamat Datang User"
-				resp.Token = tokenstring
+				Response.Message = "Selamat Datang"
+				Response.Token = tokenstring
 			}
 		} else {
-			resp.Message = "Password Salah"
+			Response.Message = "Email atau Password Salah"
 		}
 	}
-	return GCFReturnStruct(resp)
+
+	return GCFReturnStruct(Response)
 }
 
 func Register(Mongoenv, dbname string, r *http.Request) string {
@@ -123,35 +128,38 @@ func Register(Mongoenv, dbname string, r *http.Request) string {
 }
 
 // <--- FUNCTION ADMIN --->
-func LoginAdmin(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string {
-	var resp Credential
-	mconn := SetConnection(MongoEnv, dbname)
+func LoginAdmin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	var Response Credential
+	Response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 	var dataadmin Admin
 	err := json.NewDecoder(r.Body).Decode(&dataadmin)
 	if err != nil {
-		resp.Message = "error parsing application/json: " + err.Error()
+		Response.Message = "error parsing application/json: " + err.Error()
 	} else {
+		// Validasi email harus menggunakan npm@std.ulbi.ac.id sesuai dengan email kampus didaftarkan sebelum melakukan login
 		validator := NewEmailValidator()
 		if !validator.IsValid(dataadmin.Email) {
-			resp.Message = "Email is not valid"
-			response := GCFReturnStruct(resp)
+			Response.Message = "Email is not valid"
+			response := GCFReturnStruct(Response)
 			return response
 		}
 
-		if IsPasswordValidAdmin(mconn, Colname, dataadmin) {
-			tokenstring, err := watoken.Encode(dataadmin.Email, os.Getenv(Privatekey))
+		if IsPasswordValidEmailAdmin(mconn, collectionname, dataadmin) {
+			Response.Status = true
+			tokenstring, err := watoken.Encode(dataadmin.Email, os.Getenv(PASETOPRIVATEKEYENV))
 			if err != nil {
-				resp.Message = "Gagal Encode Token : " + err.Error()
+				Response.Message = "Gagal Encode Token : " + err.Error()
 			} else {
-				resp.Status = true
-				resp.Message = "Selamat Datang Admin"
-				resp.Token = tokenstring
+				Response.Message = "Selamat Datang Admin"
+				Response.Token = tokenstring
 			}
 		} else {
-			resp.Message = "Password Salah"
+			Response.Message = "Email atau Password Salah"
 		}
 	}
-	return GCFReturnStruct(resp)
+
+	return GCFReturnStruct(Response)
 }
 
 // <--- FUNCTION PARKIRAN --->
