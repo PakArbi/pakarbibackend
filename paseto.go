@@ -174,7 +174,7 @@ func GCFInsertParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpark
 	} else {
 		// Process the request with the "Login" token
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.Email = checktoken
+		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
 		} else {
