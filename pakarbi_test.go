@@ -143,6 +143,7 @@ func TestUserFix(t *testing.T) {
 func TestAdminFix(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	var admindata Admin
+	admindata.UsernameId = "Pakarbisa2023"
 	admindata.Username = "adminpakarbi"
 	admindata.Password = "adminpakarbipass"
 	admindata.PasswordHash = "adminpakarbipass"

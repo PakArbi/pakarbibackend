@@ -13,7 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-
 // <--- FUNCTION MONGODB --->
 
 func SetConnection(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
@@ -142,7 +141,7 @@ func FindAdmin(mongoconn *mongo.Database, collection string, admindata Admin) Ad
 func IsPasswordValidAdmin(mongoconn *mongo.Database, collection string, admindata Admin) bool {
 	filter := bson.M{"email": admindata.Email}
 	res := atdb.GetOneDoc[Admin](mongoconn, collection, filter)
-	return CheckPasswordHash(admindata.Password, res.Password)
+	return CheckPasswordHash(admindata.PasswordHash, res.PasswordHash)
 }
 
 func GetOneAdmin(MongoConn *mongo.Database, colname string, admindata Admin) Admin {
@@ -150,4 +149,3 @@ func GetOneAdmin(MongoConn *mongo.Database, colname string, admindata Admin) Adm
 	data := atdb.GetOneDoc[Admin](MongoConn, colname, filter)
 	return data
 }
-
