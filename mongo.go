@@ -71,15 +71,14 @@ func DeleteUser(mongoconn *mongo.Database, collection string, userdata User) int
 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
 }
 
-func FindUser(mongoconn *mongo.Database, collection string, userdata User) User {
+func FindUserNPM(mongoconn *mongo.Database, collection string, userdata User) User {
 	filter := bson.M{"npm": userdata.NPM}
 	return atdb.GetOneDoc[User](mongoconn, collection, filter)
 }
 
-func IsPasswordValid(mongoconn *mongo.Database, collection string, userdata User) bool {
-	filter := bson.M{"npm": userdata.NPM}
-	res := atdb.GetOneDoc[User](mongoconn, collection, filter)
-	return CompareHashPass(userdata.PasswordHash, res.PasswordHash)
+func FindUserEmail(mongoconn *mongo.Database, collection string, userdata User) User {
+	filter := bson.M{"email": userdata.Email}
+	return atdb.GetOneDoc[User](mongoconn, collection, filter)
 }
 
 func IsPasswordValidNPM(mongoconn *mongo.Database, collection string, userdata User) bool {

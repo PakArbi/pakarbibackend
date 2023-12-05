@@ -25,30 +25,6 @@ func (v *EmailValidator) IsValid(email string) bool {
 }
 
 // <--- FUNCTION LOGIN USER --->
-func LoginUser(Privatekey, MongoEnv, dbname, Colname string, r *http.Request) string {
-	var resp Credential
-	mconn := SetConnection(MongoEnv, dbname)
-	var datauser User
-	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		resp.Message = "error parsing application/json: " + err.Error()
-	} else {
-		if IsPasswordValid(mconn, Colname, datauser) {
-			tokenstring, err := watoken.Encode(datauser.NPM, os.Getenv(Privatekey))
-			if err != nil {
-				resp.Message = "Gagal Encode Token : " + err.Error()
-			} else {
-				resp.Status = true
-				resp.Message = "Selamat Datang User"
-				resp.Token = tokenstring
-			}
-		} else {
-			resp.Message = "Password Salah"
-		}
-	}
-	return GCFReturnStruct(resp)
-}
-
 func LoginUserNPM(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response Credential
 	Response.Status = false
@@ -187,7 +163,7 @@ func LoginAdmin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname 
 }
 
 // <--- FUNCTION PARKIRAN --->
-func GCFInsertParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
@@ -202,7 +178,7 @@ func GCFInsertParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpark
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
 		} else {
-			user2 := FindUser(mconn, colluser, userdata)
+			user2 := FindUserNPM(mconn, colluser, userdata)
 			if user2.Role == "user" {
 				var dataparkiran Parkiran
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
@@ -222,15 +198,126 @@ func GCFInsertParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpark
 					response.Message = "Berhasil Insert Data Parkiran"
 				}
 			} else {
-				response.Message = "Anda tidak dapat Insert data karena bukan admin"
+				response.Message = "Anda tidak dapat Insert data karena bukan user"
 			}
 		}
 	}
 	return GCFReturnStruct(response)
 }
 
-func GCFDeleteParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+	var response Credential
+	response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var userdata User
+	gettoken := r.Header.Get("Login")
+	if gettoken == "" {
+		response.Message = "Header Login Not Exist"
+	} else {
+		// Process the request with the "Login" token
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		userdata.NPM = checktoken
+		if checktoken == "" {
+			response.Message = "Kamu kayaknya belum punya akun"
+		} else {
+			user2 := FindUserEmail(mconn, colluser, userdata)
+			if user2.Role == "user" {
+				var dataparkiran Parkiran
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+				if err != nil {
+					response.Message = "Error parsing application/json: " + err.Error()
+				} else {
+					insertParkiran(mconn, collparkiran, Parkiran{
+						ParkiranId:     dataparkiran.ParkiranId,
+						Nama:           dataparkiran.Nama,
+						NPM:            dataparkiran.NPM,
+						Prodi:          dataparkiran.Prodi,
+						NamaKendaraan:  dataparkiran.NamaKendaraan,
+						NomorKendaraan: dataparkiran.NomorKendaraan,
+						JenisKendaraan: dataparkiran.JenisKendaraan,
+					})
+					response.Status = true
+					response.Message = "Berhasil Insert Data Parkiran"
+				}
+			} else {
+				response.Message = "Anda tidak dapat Insert data karena bukan user"
+			}
+		}
+	}
+	return GCFReturnStruct(response)
+}
 
+func GCFUpdateParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+	var response Credential
+	response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var userdata User
+
+	gettoken := r.Header.Get("Login")
+	if gettoken == "" {
+		response.Message = "Header Login Not Exist"
+	} else {
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		userdata.Email = checktoken
+		if checktoken == "" {
+			response.Message = "Kamu kayaknya belum punya akun"
+		} else {
+			user2 := FindUserNPM(mconn, colluser, userdata)
+			if user2.Role == "user" {
+				var dataparkiran Parkiran
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+				if err != nil {
+					response.Message = "Error parsing application/json: " + err.Error()
+				} else {
+					UpdateParkiran(mconn, collparkiran, bson.M{"id": dataparkiran.ID}, dataparkiran)
+					response.Status = true
+					response.Message = "Berhasil Update Parkiran"
+					GCFReturnStruct(CreateResponse(true, "Success Update Parkiran", dataparkiran))
+				}
+			} else {
+				response.Message = "Anda tidak dapat Update data karena bukan user"
+			}
+		}
+	}
+	return GCFReturnStruct(response)
+}
+
+func GCFUpdateParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+	var response Credential
+	response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var userdata User
+
+	gettoken := r.Header.Get("Login")
+	if gettoken == "" {
+		response.Message = "Header Login Not Exist"
+	} else {
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		userdata.Email = checktoken
+		if checktoken == "" {
+			response.Message = "Kamu kayaknya belum punya akun"
+		} else {
+			user2 := FindUserEmail(mconn, colluser, userdata)
+			if user2.Role == "user" {
+				var dataparkiran Parkiran
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+				if err != nil {
+					response.Message = "Error parsing application/json: " + err.Error()
+				} else {
+					UpdateParkiran(mconn, collparkiran, bson.M{"id": dataparkiran.ID}, dataparkiran)
+					response.Status = true
+					response.Message = "Berhasil Update Parkiran"
+					GCFReturnStruct(CreateResponse(true, "Success Update Parkiran", dataparkiran))
+				}
+			} else {
+				response.Message = "Anda tidak dapat Update data karena bukan user"
+			}
+		}
+	}
+	return GCFReturnStruct(response)
+}
+
+func GCFDeleteParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var respon Credential
 	respon.Status = false
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
@@ -246,7 +333,7 @@ func GCFDeleteParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpark
 		if checktoken == "" {
 			respon.Message = "Kamu kayaknya belum punya akun"
 		} else {
-			user2 := FindUser(mconn, colluser, userdata)
+			user2 := FindUserNPM(mconn, colluser, userdata)
 			if user2.Role == "user" {
 				var dataparkiran Parkiran
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
@@ -258,48 +345,46 @@ func GCFDeleteParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpark
 					respon.Message = "Berhasil Delete Parkiran"
 				}
 			} else {
-				respon.Message = "Anda tidak dapat Delete data karena bukan admin"
+				respon.Message = "Anda tidak dapat Delete data karena bukan user"
 			}
 		}
 	}
 	return GCFReturnStruct(respon)
 }
 
-func GCFUpdateParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
-	var response Credential
-	response.Status = false
+func GCFDeleteParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+	var respon Credential
+	respon.Status = false
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 	var userdata User
 
 	gettoken := r.Header.Get("Login")
 	if gettoken == "" {
-		response.Message = "Header Login Not Exist"
+		respon.Message = "Header Login Not Exist"
 	} else {
+		// Process the request with the "Login" token
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.Email = checktoken
 		if checktoken == "" {
-			response.Message = "Kamu kayaknya belum punya akun"
+			respon.Message = "Kamu kayaknya belum punya akun"
 		} else {
-			user2 := FindUser(mconn, colluser, userdata)
+			user2 := FindUserEmail(mconn, colluser, userdata)
 			if user2.Role == "user" {
 				var dataparkiran Parkiran
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
-					response.Message = "Error parsing application/json: " + err.Error()
-
+					respon.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					UpdateParkiran(mconn, collparkiran, bson.M{"id": dataparkiran.ID}, dataparkiran)
-					response.Status = true
-					response.Message = "Berhasil Update Parkiran"
-					GCFReturnStruct(CreateResponse(true, "Success Update Parkiran", dataparkiran))
+					DeleteParkiran(mconn, collparkiran, dataparkiran)
+					respon.Status = true
+					respon.Message = "Berhasil Delete Parkiran"
 				}
 			} else {
-				response.Message = "Anda tidak dapat Update data karena bukan admin"
+				respon.Message = "Anda tidak dapat Delete data karena bukan user"
 			}
-
 		}
 	}
-	return GCFReturnStruct(response)
+	return GCFReturnStruct(respon)
 }
 
 func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
