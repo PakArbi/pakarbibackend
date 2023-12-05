@@ -161,7 +161,7 @@ func TestUserFix(t *testing.T) {
 func TestLoginn(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	var userdata User
-	userdata.Email = "1214000"
+	userdata.NPM = "1214000"
 	userdata.PasswordHash = "pakarbipass"
 	IsPasswordValidNPM(mconn, "user", userdata)
 	fmt.Println(userdata)
