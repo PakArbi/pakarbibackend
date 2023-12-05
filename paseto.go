@@ -405,10 +405,10 @@ func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Req
 			dataparkiran := GetAllParkiran(conn, colname)
 			if dataparkiran == nil {
 				req.Status = false
-				req.Message = "Data catalog tidak ada"
+				req.Message = "Data Parkiran tidak ada"
 			} else {
 				req.Status = true
-				req.Message = "Data Catalog berhasil diambil"
+				req.Message = "Data Parkiran berhasil diambil"
 				req.Data = dataparkiran
 			}
 		}
