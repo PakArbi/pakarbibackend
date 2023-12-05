@@ -1,6 +1,10 @@
 package pakarbibackend
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type User struct {
 	UsernameId   string `json:"usernameid" bson:"usernameid"`
@@ -28,14 +32,14 @@ type Admin struct {
 }
 
 type Parkiran struct {
-	ID             string `json:"id" bson:"_id,omitempty"`
-	ParkiranId     string `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
-	Nama           string `json:"nama,omitempty" bson:"nama,omitempty"`
-	NPM            string `json:"npm,omitempty" bson:"npm,omitempty"`
-	Prodi          string `json:"prodi,omitempty" bson:"prodi,omitempty"`
-	NamaKendaraan  string `json:"namakendaraan,omitempty" bson:"namakendaraan,omitempty"`
-	NomorKendaraan string `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
-	JenisKendaraan string `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
+	ID             primitive.ObjectID `bson:"_id,omitempty" `
+	ParkiranId     string             `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
+	Nama           string             `json:"nama,omitempty" bson:"nama,omitempty"`
+	NPM            string             `json:"npm,omitempty" bson:"npm,omitempty"`
+	Prodi          string             `json:"prodi,omitempty" bson:"prodi,omitempty"`
+	NamaKendaraan  string             `json:"namakendaraan,omitempty" bson:"namakendaraan,omitempty"`
+	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
+	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
 }
 
 type Credential struct {

@@ -76,6 +76,12 @@ func FindUser(mongoconn *mongo.Database, collection string, userdata User) User 
 	return atdb.GetOneDoc[User](mongoconn, collection, filter)
 }
 
+func IsPasswordValid(mongoconn *mongo.Database, collection string, userdata User) bool {
+	filter := bson.M{"npm": userdata.NPM}
+	res := atdb.GetOneDoc[User](mongoconn, collection, filter)
+	return CompareHashPass(userdata.PasswordHash, res.PasswordHash)
+}
+
 func IsPasswordValidNPM(mongoconn *mongo.Database, collection string, userdata User) bool {
 	filter := bson.M{
 		"$or": []bson.M{
