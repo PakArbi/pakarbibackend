@@ -209,12 +209,12 @@ func insertParkiran(mongoconn *mongo.Database, collection string, parkirandata P
 }
 
 func DeleteParkiran(mongoconn *mongo.Database, collection string, parkirandata Parkiran) interface{} {
-	filter := bson.M{"parkiranid": parkirandata.ParkiranId}
+	filter := bson.M{"parkiranid": parkirandata.Parkiranid}
 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
 }
 
-func UpdateParkiran(mongoconn *mongo.Database, collection string, filter bson.M, parkirandata Parkiran) interface{} {
-	updatedFilter := bson.M{"parkiranid": parkirandata.ParkiranId}
+func UpdatedParkiran(mongoconn *mongo.Database, collection string, filter bson.M, parkirandata Parkiran) interface{} {
+	updatedFilter := bson.M{"parkiranid": parkirandata.Parkiranid}
 	return atdb.ReplaceOneDoc(mongoconn, collection, updatedFilter, parkirandata)
 }
 
@@ -225,7 +225,7 @@ func GetAllParkiran(mongoconn *mongo.Database, collection string) []Parkiran {
 
 func GetAllParkiranID(mongoconn *mongo.Database, collection string, parkirandata Parkiran) Parkiran {
 	filter := bson.M{
-		"parkiranid":     parkirandata.ParkiranId,
+		"parkiranid":     parkirandata.Parkiranid,
 		"nama":           parkirandata.Nama,
 		"npm":            parkirandata.NPM,
 		"prodi":          parkirandata.Prodi,

@@ -186,7 +186,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
 					insertParkiran(mconn, collparkiran, Parkiran{
-						ParkiranId:     dataparkiran.ParkiranId,
+						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
 						NPM:            dataparkiran.NPM,
 						Prodi:          dataparkiran.Prodi,
@@ -228,7 +228,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
 					insertParkiran(mconn, collparkiran, Parkiran{
-						ParkiranId:     dataparkiran.ParkiranId,
+						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
 						NPM:            dataparkiran.NPM,
 						Prodi:          dataparkiran.Prodi,
@@ -269,7 +269,7 @@ func GCFUpdateParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					UpdateParkiran(mconn, collparkiran, bson.M{"id": dataparkiran.ID}, dataparkiran)
+					UpdatedParkiran(mconn, collparkiran, bson.M{"id": dataparkiran.ID}, dataparkiran)
 					response.Status = true
 					response.Message = "Berhasil Update Parkiran"
 					GCFReturnStruct(CreateResponse(true, "Success Update Parkiran", dataparkiran))
@@ -304,7 +304,7 @@ func GCFUpdateParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					UpdateParkiran(mconn, collparkiran, bson.M{"id": dataparkiran.ID}, dataparkiran)
+					UpdatedParkiran(mconn, collparkiran, bson.M{"id": dataparkiran.ID}, dataparkiran)
 					response.Status = true
 					response.Message = "Berhasil Update Parkiran"
 					GCFReturnStruct(CreateResponse(true, "Success Update Parkiran", dataparkiran))
