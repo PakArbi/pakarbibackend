@@ -55,6 +55,7 @@ type Response struct {
 }
 
 type Payload struct {
+	User     string    `json:"user"`
 	Parkiran string    `json:"parkiran"`
 	Role     string    `json:"role"`
 	Exp      time.Time `json:"exp"`
