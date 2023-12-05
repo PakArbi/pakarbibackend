@@ -329,7 +329,7 @@ func GCFDeleteParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	} else {
 		// Process the request with the "Login" token
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.Email = checktoken
+		userdata.NPM = checktoken
 		if checktoken == "" {
 			respon.Message = "Kamu kayaknya belum punya akun"
 		} else {
