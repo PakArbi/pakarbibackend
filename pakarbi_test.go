@@ -102,11 +102,10 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 func TestHashFunction(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	var userdata User
-	userdata.UsernameId = "D4TI1214000"
-	userdata.Username = "pakarbi"
+	userdata.NPM = "1214000"
 	userdata.PasswordHash = "pakarbipass"
 
-	filter := bson.M{"usernameid": userdata.UsernameId}
+	filter := bson.M{"npm": userdata.NPM}
 	res := atdb.GetOneDoc[User](mconn, "user", filter)
 	fmt.Println("Mongo User Result: ", res)
 	hash, _ := HashPass(userdata.PasswordHash)
@@ -119,8 +118,7 @@ func TestHashFunction(t *testing.T) {
 func TestIsPasswordValid(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
 	var userdata User
-	userdata.UsernameId = "D4TI1214000"
-	userdata.Username = "pakarbi"
+	userdata.NPM = "1214000"
 	userdata.PasswordHash = "pakarbipass"
 
 	anu := IsPasswordValidNPM(mconn, "user", userdata)
@@ -140,22 +138,31 @@ func TestUserFix(t *testing.T) {
 	CreateUser(mconn, "user", userdata)
 }
 
-func TestAdminFix(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
-	var admindata Admin
-	admindata.UsernameId = "Pakarbisa2023"
-	admindata.Username = "adminpakarbi"
-	admindata.Password = "adminpakarbipass"
-	admindata.PasswordHash = "adminpakarbipass"
-	admindata.Email = "PakArbi2023@std.ulbi.ac.id"
-	admindata.Role = "admin"
-	CreateAdmin(mconn, "admin", admindata)
-}
+// func TestAdminFix(t *testing.T) {
+// 	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
+// 	var admindata Admin
+// 	admindata.UsernameId = "Pakarbisa2023"
+// 	admindata.Username = "adminpakarbi"
+// 	admindata.Password = "adminpakarbipass"
+// 	admindata.PasswordHash = "adminpakarbipass"
+// 	admindata.Email = "PakArbi2023@std.ulbi.ac.id"
+// 	admindata.Role = "admin"
+// 	CreateAdmin(mconn, "admin", admindata)
+// }
 
-func TestGeneratePrivateKeyPasetoAdmin(t *testing.T) {
-	privateKey, publicKey := watoken.GenerateKey()
-	fmt.Println(privateKey)
-	fmt.Println(publicKey)
-	hasil, err := watoken.Encode("adminpakarbipass", privateKey)
-	fmt.Println(hasil, err)
+// func TestGeneratePrivateKeyPasetoAdmin(t *testing.T) {
+// 	privateKey, publicKey := watoken.GenerateKey()
+// 	fmt.Println(privateKey)
+// 	fmt.Println(publicKey)
+// 	hasil, err := watoken.Encode("adminpakarbipass", privateKey)
+// 	fmt.Println(hasil, err)
+// }
+
+func TestLoginn(t *testing.T) {
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
+	var userdata User
+	userdata.Email = "1214000"
+	userdata.PasswordHash = "pakarbipass"
+	IsPasswordValidNPM(mconn, "user", userdata)
+	fmt.Println(userdata)
 }
