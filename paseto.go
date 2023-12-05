@@ -258,7 +258,7 @@ func GCFUpdateParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 		response.Message = "Header Login Not Exist"
 	} else {
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.Email = checktoken
+		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
 		} else {
