@@ -7,16 +7,17 @@ import (
 )
 
 type User struct {
-	UsernameId   string `json:"usernameid" bson:"usernameid"`
-	Username     string `json:"username" bson:"username"`
-	NPM          string `json:"npm" bson:"npm"`
-	Password     string `json:"password" bson:"password"`
-	PasswordHash string `json:"passwordhash" bson:"passwordhash"`
-	Email        string `bson:"email,omitempty" json:"email,omitempty"`
-	Role         string `json:"role,omitempty" bson:"role,omitempty"`
-	Token        string `json:"token,omitempty" bson:"token,omitempty"`
-	Private      string `json:"private,omitempty" bson:"private,omitempty"`
-	Public       string `json:"public,omitempty" bson:"public,omitempty"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" `
+	UsernameId   string             `json:"usernameid" bson:"usernameid"`
+	Username     string             `json:"username" bson:"username"`
+	NPM          string             `json:"npm" bson:"npm"`
+	Password     string             `json:"password" bson:"password"`
+	PasswordHash string             `json:"passwordhash" bson:"passwordhash"`
+	Email        string             `bson:"email,omitempty" json:"email,omitempty"`
+	Role         string             `json:"role,omitempty" bson:"role,omitempty"`
+	Token        string             `json:"token,omitempty" bson:"token,omitempty"`
+	Private      string             `json:"private,omitempty" bson:"private,omitempty"`
+	Public       string             `json:"public,omitempty" bson:"public,omitempty"`
 }
 
 type Admin struct {
@@ -33,7 +34,7 @@ type Admin struct {
 
 type Parkiran struct {
 	ID             primitive.ObjectID `bson:"_id,omitempty" `
-	Parkiranid     int             `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
+	Parkiranid     int                `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
 	Nama           string             `json:"nama,omitempty" bson:"nama,omitempty"`
 	NPM            string             `json:"npm,omitempty" bson:"npm,omitempty"`
 	Prodi          string             `json:"prodi,omitempty" bson:"prodi,omitempty"`

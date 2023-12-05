@@ -130,6 +130,16 @@ func CreateUser(mongoconn *mongo.Database, collection string, userdata User) int
 	return atdb.InsertOneDoc(mongoconn, collection, userdata)
 }
 
+func UpdatedUser(mongoconn *mongo.Database, collection string, filter bson.M, userdata User) interface{} {
+	updatedFilter := bson.M{"usernameid": userdata.UsernameId}
+	return atdb.ReplaceOneDoc(mongoconn, collection, updatedFilter, userdata)
+}
+
+func GetAllUser(mongoconn *mongo.Database, collection string) []User {
+	user := atdb.GetAllDoc[[]User](mongoconn, collection)
+	return user
+}
+
 // <--- FUNCTION ADMIN --->
 
 func CreateNewAdminRole(mongoconn *mongo.Database, collection string, admindata Admin) interface{} {
@@ -198,12 +208,12 @@ func CreateAdmin(mongoconn *mongo.Database, collection string, admindata Admin) 
 
 // <--- FUNCTION CRUD PARKIRAN --->
 
-// catalog
+// parkiran
 func CreateNewParkiran(mongoconn *mongo.Database, collection string, parkirandata Parkiran) interface{} {
 	return atdb.InsertOneDoc(mongoconn, collection, parkirandata)
 }
 
-// catalog function
+// parkiran function
 func insertParkiran(mongoconn *mongo.Database, collection string, parkirandata Parkiran) interface{} {
 	return atdb.InsertOneDoc(mongoconn, collection, parkirandata)
 }

@@ -24,7 +24,38 @@ func (v *EmailValidator) IsValid(email string) bool {
 	return match
 }
 
-// <--- FUNCTION LOGIN USER --->
+// <--- FUNCTION USER --->
+func Register(Mongoenv, dbname string, r *http.Request) string {
+	resp := new(Credential)
+	userdata := new(User)
+	resp.Status = false
+	conn := MongoCreateConnection(Mongoenv, dbname)
+	err := json.NewDecoder(r.Body).Decode(&userdata)
+	if err != nil {
+		resp.Message = "error parsing application/json: " + err.Error()
+	} else {
+		resp.Status = true
+
+		// Validasi email sebelum proses pendaftaran
+		validator := NewEmailValidator()
+		if !validator.IsValid(userdata.Email) {
+			resp.Message = "Email is not valid"
+			resp.Status = false
+			response := ReturnStringStruct(resp)
+			return response
+		}
+
+		hash, err := HashPass(userdata.PasswordHash)
+		if err != nil {
+			resp.Message = "Gagal Hash Password" + err.Error()
+		}
+		InsertUserdata(conn, userdata.UsernameId, userdata.Username, userdata.NPM, userdata.Password, hash, userdata.Email, userdata.Role)
+		resp.Message = "Berhasil Input data"
+	}
+	response := ReturnStringStruct(resp)
+	return response
+}
+
 func LoginUserNPM(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response Credential
 	Response.Status = false
@@ -96,35 +127,68 @@ func LoginUserEmail(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionn
 	return GCFReturnStruct(Response)
 }
 
-func Register(Mongoenv, dbname string, r *http.Request) string {
-	resp := new(Credential)
-	userdata := new(User)
-	resp.Status = false
-	conn := MongoCreateConnection(Mongoenv, dbname)
-	err := json.NewDecoder(r.Body).Decode(&userdata)
-	if err != nil {
-		resp.Message = "error parsing application/json: " + err.Error()
+func GCFUpdateUserNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, colluser2 string, r *http.Request) string {
+	var response Credential
+	response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var userdata User
+
+	gettoken := r.Header.Get("Login")
+	if gettoken == "" {
+		response.Message = "Header Login Not Exist"
 	} else {
-		resp.Status = true
-
-		// Validasi email sebelum proses pendaftaran
-		validator := NewEmailValidator()
-		if !validator.IsValid(userdata.Email) {
-			resp.Message = "Email is not valid"
-			resp.Status = false
-			response := ReturnStringStruct(resp)
-			return response
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		userdata.NPM = checktoken
+		if checktoken == "" {
+			response.Message = "Kamu kayaknya belum punya akun"
+		} else {
+			user2 := FindUserNPM(mconn, colluser, userdata)
+			if user2.Role == "user" {
+				var datauser User
+				err := json.NewDecoder(r.Body).Decode(&datauser)
+				if err != nil {
+					response.Message = "Error parsing application/json: " + err.Error()
+				} else {
+					UpdatedUser(mconn, colluser2, bson.M{"id": datauser.ID}, datauser)
+					response.Status = true
+					response.Message = "Berhasil Update User"
+					GCFReturnStruct(CreateResponse(true, "Success Update User", datauser))
+				}
+			} else {
+				response.Message = "Anda tidak dapat Update Data User"
+			}
 		}
-
-		hash, err := HashPass(userdata.PasswordHash)
-		if err != nil {
-			resp.Message = "Gagal Hash Password" + err.Error()
-		}
-		InsertUserdata(conn, userdata.UsernameId, userdata.Username, userdata.NPM, userdata.Password, hash, userdata.Email, userdata.Role)
-		resp.Message = "Berhasil Input data"
 	}
-	response := ReturnStringStruct(resp)
-	return response
+	return GCFReturnStruct(response)
+}
+
+func GetAllDataUser(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+	req := new(Response)
+	conn := SetConnection(MongoEnv, dbname)
+	tokenlogin := r.Header.Get("Login")
+	if tokenlogin == "" {
+		req.Status = false
+		req.Message = "Header Login Not Found"
+	} else {
+		// Dekode token untuk mendapatkan
+		_, err := DecodeGetUser(os.Getenv(PublicKey), tokenlogin)
+		if err != nil {
+			req.Status = false
+			req.Message = "Data Tersebut tidak ada" + tokenlogin
+		} else {
+			// Langsung ambil data user
+			datauser := GetAllUser(conn, colname)
+			if datauser == nil {
+				req.Status = false
+				req.Message = "Data User tidak ada"
+			} else {
+				req.Status = true
+				req.Message = "Data User berhasil diambil"
+				req.Data = datauser
+			}
+		}
+	}
+	return ReturnStringStruct(req)
 }
 
 // <--- FUNCTION ADMIN --->

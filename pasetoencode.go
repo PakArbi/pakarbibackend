@@ -33,3 +33,11 @@ func DecodeGetParkiran(PublicKey, tokenStr string) (pay string, err error) {
 	}
 	return key.Parkiran, nil
 }
+
+func DecodeGetUser(PublicKey, tokenStr string) (pay string, err error) {
+	key, err := Decoder(PublicKey, tokenStr)
+	if err != nil {
+		fmt.Println("Cannot decode the token", err.Error())
+	}
+	return key.Parkiran, nil
+}
