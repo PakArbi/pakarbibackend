@@ -170,3 +170,9 @@ func GetOneAdmin(MongoConn *mongo.Database, colname string, admindata Admin) Adm
 	data := atdb.GetOneDoc[Admin](MongoConn, colname, filter)
 	return data
 }
+
+func GetOneParkiranData(mongoconn *mongo.Database, colname, Pkrid string) (dest Parkiran) {
+	filter := bson.M{"parkiranid": Pkrid}
+	dest = atdb.GetOneDoc[Parkiran](mongoconn, colname, filter)
+	return
+}

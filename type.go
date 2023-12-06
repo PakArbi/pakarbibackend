@@ -55,6 +55,16 @@ type Response struct {
 	Data    interface{} `json:"data" bson:"data"`
 }
 
+type ResponseParkiran struct {
+	Status  bool      `json:"status"`
+	Message string   `json:"message"`
+	Data    Parkiran `json:"data"`
+}
+
+type RequestParkiran struct {
+	Parkiranid string `json:"parkiranid"`
+}
+
 type Payload struct {
 	User     string    `json:"user"`
 	Parkiran string    `json:"parkiran"`

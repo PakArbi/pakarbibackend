@@ -480,39 +480,26 @@ func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Req
 	return ReturnStringStruct(req)
 }
 
-func GetOneDataParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
-	var respon Credential
-	respon.Status = false
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
-
-	gettoken := r.Header.Get("Login")
-	if gettoken == "" {
-		respon.Message = "Header Login Not Exist"
+func GetOneDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+	req := new(ResponseParkiran)
+	resp := new(RequestParkiran)
+	conn := MongoCreateConnection(MongoEnv, dbname)
+	tokenlogin := r.Header.Get("Login")
+	if tokenlogin == "" {
+		req.Status = false
+		req.Message = "Header Login Not Found"
 	} else {
-		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.NPM = checktoken
-		if checktoken == "" {
-			respon.Message = "Kamu kayaknya belum punya akun"
+		err := json.NewDecoder(r.Body).Decode(&resp)
+		if err != nil {
+			req.Message = "error parsing application/json: " + err.Error()
 		} else {
-			user2 := FindUserNPM(mconn, colluser, userdata)
-			if user2.Role == "user" {
-				var dataparkiran Parkiran
-				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
-				if err != nil {
-					respon.Message = "Error parsing application/json: " + err.Error()
-				} else {
-					GetOneParkiran(mconn, collparkiran, dataparkiran)
-					respon.Status = true
-					respon.Message = "Berhasil Delete Parkiran"
-				}
-			} else {
-				respon.Message = "Anda tidak dapat Delete data karena bukan user"
-			}
+			dataparkiran := GetOneParkiranData(conn, colname, resp.Parkiranid)
+			req.Status = true
+			req.Message = "data Parkiran berhasil diambil"
+			req.Data = dataparkiran
 		}
 	}
-	return GCFReturnStruct(respon)
+	return ReturnStringStruct(req)
 }
 
 func GCFGetAllParkiranID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
