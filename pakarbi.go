@@ -233,6 +233,11 @@ func GetAllParkiran(mongoconn *mongo.Database, collection string) []Parkiran {
 	return parkiran
 }
 
+func GetOneParkiran(mongoconn *mongo.Database, collection string, parkirandata Parkiran) interface{} {
+	filter := bson.M{"parkiranid": parkirandata.Parkiranid}
+	return atdb.GetOneDoc[Parkiran](mongoconn, collection, filter)
+}
+
 func GetAllParkiranID(mongoconn *mongo.Database, collection string, parkirandata Parkiran) Parkiran {
 	filter := bson.M{
 		"parkiranid":     parkirandata.Parkiranid,

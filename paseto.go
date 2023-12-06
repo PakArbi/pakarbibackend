@@ -480,6 +480,41 @@ func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Req
 	return ReturnStringStruct(req)
 }
 
+func GetOneDataParkiran(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+	var respon Credential
+	respon.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var userdata User
+
+	gettoken := r.Header.Get("Login")
+	if gettoken == "" {
+		respon.Message = "Header Login Not Exist"
+	} else {
+		// Process the request with the "Login" token
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		userdata.NPM = checktoken
+		if checktoken == "" {
+			respon.Message = "Kamu kayaknya belum punya akun"
+		} else {
+			user2 := FindUserNPM(mconn, colluser, userdata)
+			if user2.Role == "user" {
+				var dataparkiran Parkiran
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+				if err != nil {
+					respon.Message = "Error parsing application/json: " + err.Error()
+				} else {
+					GetOneParkiran(mconn, collparkiran, dataparkiran)
+					respon.Status = true
+					respon.Message = "Berhasil Delete Parkiran"
+				}
+			} else {
+				respon.Message = "Anda tidak dapat Delete data karena bukan user"
+			}
+		}
+	}
+	return GCFReturnStruct(respon)
+}
+
 func GCFGetAllParkiranID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
