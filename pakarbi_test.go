@@ -138,25 +138,25 @@ func TestUserFix(t *testing.T) {
 	CreateUser(mconn, "user", userdata)
 }
 
-// func TestAdminFix(t *testing.T) {
-// 	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
-// 	var admindata Admin
-// 	admindata.UsernameId = "Pakarbisa2023"
-// 	admindata.Username = "adminpakarbi"
-// 	admindata.Password = "adminpakarbipass"
-// 	admindata.PasswordHash = "adminpakarbipass"
-// 	admindata.Email = "PakArbi2023@std.ulbi.ac.id"
-// 	admindata.Role = "admin"
-// 	CreateAdmin(mconn, "admin", admindata)
-// }
+func TestAdminFix(t *testing.T) {
+	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
+	var admindata Admin
+	admindata.UsernameId = "Pakarbisa2023"
+	admindata.Username = "adminpakarbi"
+	admindata.Password = "adminpakarbipass"
+	admindata.PasswordHash = "adminpakarbipass"
+	admindata.Email = "PakArbi2023@std.ulbi.ac.id"
+	admindata.Role = "admin"
+	CreateAdmin(mconn, "admin", admindata)
+}
 
-// func TestGeneratePrivateKeyPasetoAdmin(t *testing.T) {
-// 	privateKey, publicKey := watoken.GenerateKey()
-// 	fmt.Println(privateKey)
-// 	fmt.Println(publicKey)
-// 	hasil, err := watoken.Encode("adminpakarbipass", privateKey)
-// 	fmt.Println(hasil, err)
-// }
+func TestGeneratePrivateKeyPasetoAdmin(t *testing.T) {
+	privateKey, publicKey := watoken.GenerateKey()
+	fmt.Println(privateKey)
+	fmt.Println(publicKey)
+	hasil, err := watoken.Encode("adminpakarbipass", privateKey)
+	fmt.Println(hasil, err)
+}
 
 func TestLoginn(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "pakarbiappdb")
