@@ -27,7 +27,7 @@ func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
 	return docs
 }
 
-func UpdateOneDoc(id primitive.ObjectID, db *mongo.Database, col string, doc interface{}) (err error) {
+func UpdateOneDoc(id primitive.ObjectID, db *mongo.Database, col string, doc interface{}) (insertedID interface{}) {
 	filter := bson.M{"_id": id}
 	result, err := db.Collection(col).UpdateOne(context.Background(), filter, bson.M{"$set": doc})
 	if err != nil {

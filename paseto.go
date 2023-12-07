@@ -82,17 +82,6 @@ func LoginUserNPM(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionnam
 	return GCFReturnStruct(Response)
 }
 
-// return struct
-func GCFReturnStruct(DataStuct any) string {
-	jsondata, _ := json.Marshal(DataStuct)
-	return string(jsondata)
-}
-
-func ReturnStringStruct(Data any) string {
-	jsonee, _ := json.Marshal(Data)
-	return string(jsonee)
-}
-
 func LoginUserEmail(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
 	var Response Credential
 	Response.Status = false
@@ -127,41 +116,6 @@ func LoginUserEmail(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionn
 	return GCFReturnStruct(Response)
 }
 
-func GCFUpdateUserNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, colluser2 string, r *http.Request) string {
-	var response Credential
-	response.Status = false
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
-
-	gettoken := r.Header.Get("Login")
-	if gettoken == "" {
-		response.Message = "Header Login Not Exist"
-	} else {
-		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.NPM = checktoken
-		if checktoken == "" {
-			response.Message = "Kamu kayaknya belum punya akun"
-		} else {
-			user2 := FindUserNPM(mconn, colluser, userdata)
-			if user2.Role == "user" {
-				var datauser User
-				err := json.NewDecoder(r.Body).Decode(&datauser)
-				if err != nil {
-					response.Message = "Error parsing application/json: " + err.Error()
-				} else {
-					UpdatedUser(mconn, colluser2, bson.M{"id": datauser.ID}, datauser)
-					response.Status = true
-					response.Message = "Berhasil Update User"
-					GCFReturnStruct(CreateResponse(true, "Success Update User", datauser))
-				}
-			} else {
-				response.Message = "Anda tidak dapat Update Data User"
-			}
-		}
-	}
-	return GCFReturnStruct(response)
-}
-
 func GetAllDataUser(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	req := new(Response)
 	conn := SetConnection(MongoEnv, dbname)
@@ -189,6 +143,17 @@ func GetAllDataUser(PublicKey, MongoEnv, dbname, colname string, r *http.Request
 		}
 	}
 	return ReturnStringStruct(req)
+}
+
+// return struct
+func GCFReturnStruct(DataStuct any) string {
+	jsondata, _ := json.Marshal(DataStuct)
+	return string(jsondata)
+}
+
+func ReturnStringStruct(Data any) string {
+	jsonee, _ := json.Marshal(Data)
+	return string(jsonee)
 }
 
 // <--- FUNCTION ADMIN --->
@@ -257,6 +222,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 						NamaKendaraan:  dataparkiran.NamaKendaraan,
 						NomorKendaraan: dataparkiran.NomorKendaraan,
 						JenisKendaraan: dataparkiran.JenisKendaraan,
+						Status:         dataparkiran.Status,
 					})
 					response.Status = true
 					response.Message = "Berhasil Insert Data Parkiran"
@@ -299,6 +265,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 						NamaKendaraan:  dataparkiran.NamaKendaraan,
 						NomorKendaraan: dataparkiran.NomorKendaraan,
 						JenisKendaraan: dataparkiran.JenisKendaraan,
+						Status:         dataparkiran.Status,
 					})
 					response.Status = true
 					response.Message = "Berhasil Insert Data Parkiran"

@@ -34,13 +34,14 @@ type Admin struct {
 
 type Parkiran struct {
 	ID             primitive.ObjectID `bson:"_id,omitempty" `
-	Parkiranid     string                `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
+	Parkiranid     string             `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
 	Nama           string             `json:"nama,omitempty" bson:"nama,omitempty"`
 	NPM            string             `json:"npm,omitempty" bson:"npm,omitempty"`
 	Prodi          string             `json:"prodi,omitempty" bson:"prodi,omitempty"`
 	NamaKendaraan  string             `json:"namakendaraan,omitempty" bson:"namakendaraan,omitempty"`
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
+	Status         bool               `json:"status" bson:"status"`
 }
 
 type Credential struct {
@@ -56,7 +57,7 @@ type Response struct {
 }
 
 type ResponseParkiran struct {
-	Status  bool      `json:"status"`
+	Status  bool     `json:"status"`
 	Message string   `json:"message"`
 	Data    Parkiran `json:"data"`
 }
