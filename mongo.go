@@ -176,3 +176,23 @@ func GetOneParkiranData(mongoconn *mongo.Database, colname, Pkrid string) (dest 
 	dest = atdb.GetOneDoc[Parkiran](mongoconn, colname, filter)
 	return
 }
+
+//function Parkiran
+func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKendaraan, nomorKendaraan, jenisKendaraan, statusMessage, waktuMasuk, waktuKeluar string) (InsertedID interface{}) {
+	parkiranID := GenerateParkiranID(npm)
+	req := Parkiran{
+		Parkiranid:     parkiranID,
+		Nama:           nama,
+		NPM:            npm,
+		Prodi:          prodi,
+		NamaKendaraan:  namaKendaraan,
+		NomorKendaraan: nomorKendaraan,
+		JenisKendaraan: jenisKendaraan,
+		Status: Status{
+			Message:     statusMessage,
+			WaktuMasuk:  waktuMasuk,
+			WaktuKeluar: waktuKeluar,
+		},
+	}
+	return InsertOneDoc(MongoConn, "user", req)
+}

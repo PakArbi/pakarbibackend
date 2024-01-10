@@ -41,7 +41,7 @@ type Parkiran struct {
 	NamaKendaraan  string             `json:"namakendaraan,omitempty" bson:"namakendaraan,omitempty"`
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
-	Status         bool               `json:"status" bson:"status"`
+	Status         Status             `json:"status" bson:"status"`
 }
 
 type Status struct {

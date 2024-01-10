@@ -226,6 +226,14 @@ func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
 	}
 	return result.Seq
 }
+// <---FUNCTION GENERATE FOR PARKIRANID --->
+func GenerateParkiranID(npm string) string {
+    // Contoh: Jika NPM adalah '1214000'. maka yang diambil '4000'
+    // Anda dapat menggunakan beberapa digit terakhir dari NPM
+    // Misalnya, mengambil 4 digit terakhir (atau lebih sesuai kebutuhan)
+    lastDigits := npm[len(npm)-4:] // Mengambil 4 digit terakhir dari NPM
+    return "D3/D4" + lastDigits    // Menggabungkan pola dengan digit terakhir dari NPM
+}
 
 // <--- FUNCTION CRUD PARKIRAN --->
 
