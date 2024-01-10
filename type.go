@@ -44,6 +44,12 @@ type Parkiran struct {
 	Status         bool               `json:"status" bson:"status"`
 }
 
+type Status struct {
+	Message     string `json:"message,omitempty" bson:"message,omitempty"`
+	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
+	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
+}
+
 type Credential struct {
 	Status  bool   `json:"status" bson:"status"`
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`

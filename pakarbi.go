@@ -206,6 +206,27 @@ func CreateAdmin(mongoconn *mongo.Database, collection string, admindata Admin) 
 	return atdb.InsertOneDoc(mongoconn, collection, admindata)
 }
 
+//function mekanisme untuk auto-increment
+func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
+	filter := bson.M{"_id": sequenceName}
+	update := bson.M{"$inc": bson.M{"seq": 1}}
+
+	var result struct {
+		Seq int `bson:"seq"`
+	}
+
+	after := options.After
+	opt := &options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+	}
+	collection := mongoconn.Collection("counters")
+	err := collection.FindOneAndUpdate(context.TODO(), filter, update, opt).Decode(&result)
+	if err != nil {
+		// handle error
+	}
+	return result.Seq
+}
+
 // <--- FUNCTION CRUD PARKIRAN --->
 
 // parkiran
