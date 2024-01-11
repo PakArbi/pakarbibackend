@@ -385,6 +385,17 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 						JenisKendaraan: dataparkiran.JenisKendaraan,
 						Status:         dataparkiran.Status,
 					})
+
+					// Generate QR code with ULBI logo
+					qrLogoPath := "path/to/logo_ulbi.png" // Update with the correct path
+					qrOutputPath := "C:\\Users\\ACER\\Documents\\qrparkir\\" + dataparkiran.Parkiranid + "_qrcode.png"
+
+					err := GenerateQRCodeWithLogoULBI(dataparkiran, qrLogoPath, qrOutputPath)
+					if err != nil {
+						response.Message = "Failed to generate QR code with logo: " + err.Error()
+						return GCFReturnStruct(response)
+					}
+
 					response.Status = true
 					response.Message = "Berhasil Insert Data Parkiran"
 				}
@@ -439,7 +450,7 @@ func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, co
 	return GCFReturnStruct(response)
 }
 
-//GCF UPdate Data
+// GCF UPdate Data
 func GCFUpdateParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
@@ -510,7 +521,7 @@ func GCFUpdateParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	return GCFReturnStruct(response)
 }
 
-//GCF Hapus Data 
+//GCF Hapus Data
 
 func GCFDeleteParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var respon Credential
@@ -651,22 +662,22 @@ func GCFGetAllParkiranID(MONGOCONNSTRINGENV, dbname, collectionname string, r *h
 }
 
 func GCFGetParkiranById(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-    mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
-    var dataparkiran Parkiran
-    err := json.NewDecoder(r.Body).Decode(&dataparkiran)
-    if err != nil {
-        return GCFReturnStruct(CreateResponse(false, "Error parsing JSON: "+err.Error(), nil))
-    }
+	var dataparkiran Parkiran
+	err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+	if err != nil {
+		return GCFReturnStruct(CreateResponse(false, "Error parsing JSON: "+err.Error(), nil))
+	}
 
-    parkiran, err := GetParkiranById(mconn, collectionname, dataparkiran.Parkiranid)
-    if err != nil {
-        return GCFReturnStruct(CreateResponse(false, "Failed to Get Parkiran by ID: "+err.Error(), nil))
-    }
+	parkiran, err := GetParkiranById(mconn, collectionname, dataparkiran.Parkiranid)
+	if err != nil {
+		return GCFReturnStruct(CreateResponse(false, "Failed to Get Parkiran by ID: "+err.Error(), nil))
+	}
 
-    if parkiran != (Parkiran{}) {
-        return GCFReturnStruct(CreateResponse(true, "Success: Get Parkiran by ID", parkiran))
-    } else {
-        return GCFReturnStruct(CreateResponse(false, "No parkiran found with ID: "+dataparkiran.Parkiranid, nil))
-    }
+	if parkiran != (Parkiran{}) {
+		return GCFReturnStruct(CreateResponse(true, "Success: Get Parkiran by ID", parkiran))
+	} else {
+		return GCFReturnStruct(CreateResponse(false, "No parkiran found with ID: "+dataparkiran.Parkiranid, nil))
+	}
 }
