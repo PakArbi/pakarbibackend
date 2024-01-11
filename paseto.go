@@ -321,7 +321,10 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 					response.Message = "Berhasil Insert Data Parkiran"
 
 					// Generate QR Code with Logo
-					err := GenerateQRCodeWithLogoULBI(dataparkiran, "path/to/logo_ulbi.png", "path/to/output/qrcode.png")
+					outputPath := "C:\\Users\\ACER\\Documents\\qrparkir\\qrcode.png"
+					logoPath := "C:\\path\\to\\logo_ulbi.png"
+
+					err := GenerateQRCodeWithLogoULBI(dataparkiran, logoPath, outputPath)
 					if err != nil {
 						fmt.Println("Error:", err)
 					}
