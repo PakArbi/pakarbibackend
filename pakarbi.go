@@ -81,6 +81,56 @@ func GenerateQRCodeWithLogo(DataParkir Parkiran) error {
 	return nil
 }
 
+func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, logoFilePath, outputFilePath string) error {
+	dataJSON, err := json.Marshal(DataParkir)
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSON: %v", err)
+	}
+
+	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
+	if err != nil {
+		return fmt.Errorf("failed to generate QR code: %v", err)
+	}
+
+	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
+	if err != nil {
+		return fmt.Errorf("failed to decode QR code image: %v", err)
+	}
+
+	logoFile, err := os.Open(logoFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to open logo file: %v", err)
+	}
+	defer logoFile.Close()
+
+	logo, _, err := image.Decode(logoFile)
+	if err != nil {
+		return fmt.Errorf("failed to decode logo image: %v", err)
+	}
+
+	resizedLogo := imaging.Resize(logo, 80, 0, imaging.Lanczos)
+
+	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
+	y := (qrImage.Bounds().Dy() - resizedLogo.Bounds().Dy()) / 2
+
+	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
+
+	outFile, err := os.Create(outputFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to create output file: %v", err)
+	}
+	defer outFile.Close()
+
+	err = imaging.Encode(outFile, result, imaging.PNG)
+	if err != nil {
+		return fmt.Errorf("failed to encode image: %v", err)
+	}
+
+	fmt.Println("QR code generated successfully")
+	return nil
+}
+
+
 // <--- FUNCTION CRUD --->
 func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
 	collection := db.Collection(col)
