@@ -295,6 +295,56 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	return GCFReturnStruct(response)
 }
 
+
+func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+	var response Credential
+	response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var userdata User
+	gettoken := r.Header.Get("Login")
+	if gettoken == "" {
+		response.Message = "Header Login Not Exist"
+	} else {
+		// Process the request with the "Login" token
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		userdata.NPM = checktoken
+		if checktoken == "" {
+			response.Message = "Kamu kayaknya belum punya akun"
+		} else {
+			user2 := FindUserNPM(mconn, colluser, userdata)
+			if user2.Role == "user" {
+				var dataparkiran Parkiran
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+				if err != nil {
+					response.Message = "Error parsing application/json: " + err.Error()
+				} else {
+					insertParkiran(mconn, collparkiran, Parkiran{
+						Parkiranid:     dataparkiran.Parkiranid,
+						Nama:           dataparkiran.Nama,
+						NPM:            dataparkiran.NPM,
+						Prodi:          dataparkiran.Prodi,
+						NamaKendaraan:  dataparkiran.NamaKendaraan,
+						NomorKendaraan: dataparkiran.NomorKendaraan,
+						JenisKendaraan: dataparkiran.JenisKendaraan,
+						Status:         dataparkiran.Status,
+					})
+					response.Status = true
+					response.Message = "Berhasil Insert Data Parkiran"
+
+					// Generate QR Code with Logo
+					err := GenerateQRCodeWithLogoULBI(dataparkiran, "path/to/logo_ulbi.png", "path/to/output/qrcode.png")
+					if err != nil {
+						fmt.Println("Error:", err)
+					}
+				}
+			} else {
+				response.Message = "Anda tidak dapat Insert data karena bukan user"
+			}
+		}
+	}
+	return GCFReturnStruct(response)
+}
+
 func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
