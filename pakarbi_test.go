@@ -171,60 +171,35 @@ func TestLoginn(t *testing.T) {
 
 
 //proses untuk generate code qr
-func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
-	var response Credential
-	response.Status = false
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
-	gettoken := r.Header.Get("Login")
-	if gettoken == "" {
-		response.Message = "Header Login Not Exist"
-	} else {
-		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.NPM = checktoken
-		if checktoken == "" {
-			response.Message = "Kamu kayaknya belum punya akun"
-		} else {
-			user2 := FindUserEmail(mconn, colluser, userdata)
-			if user2.Role == "user" {
-				var dataparkiran Parkiran
-				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
-				if err != nil {
-					response.Message = "Error parsing application/json: " + err.Error()
-				} else {
-					// Generate ParkiranID using the function
-					dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
+func TestGenerateQRCodeWithLogo(t *testing.T) {
+    // Initialize your MongoDB connection here
+    mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 
-					// Memeriksa apakah sudah ada waktu keluar, jika tidak maka dianggap 'sudah masuk Parkir'
-					if dataparkiran.Status.WaktuKeluar == "" {
-						dataparkiran.Status = Status{
-							Message:    "sudah masuk Parkir",
-							WaktuMasuk: time.Now().Format(time.RFC3339),
-						}
-					} else {
-						dataparkiran.Status = Status{
-							Message:     "sudah keluar Parkir",
-							WaktuKeluar: dataparkiran.Status.WaktuKeluar,
-							WaktuMasuk:  dataparkiran.Status.WaktuMasuk,
-						}
-					}
+    // Initialize a sample Parkiran struct for testing
+    dataparkiran := Parkiran{
+        Parkiranid:     "D31214000", // parkiranid telah di generate jadi string
+        Nama:           "John Doe",
+        NPM:            "12345",     // 
+        Prodi:          "Computer Science",
+        NamaKendaraan:  "Car",
+        NomorKendaraan: "AB 1234 CD",
+        JenisKendaraan: "Sedan",
+        Status: Status{
+            Message:    "sudah masuk Parkir",
+            WaktuMasuk: time.Now().Format(time.RFC3339),
+        },
+    }
 
-					// Insert parkiran data
-					fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
-					if err != nil {
-						response.Message = "Error generating QR code: " + err.Error()
-					} else {
-						response.Status = true
-						response.Message = "Berhasil Insert Data Parkiran"
-						response.Data = fileName // Add the file name to the response
-					}
-				}
-			} else {
-				response.Message = "Anda tidak dapat Insert data karena bukan user"
-			}
-		}
-	}
+    fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
+    if err != nil {
+        t.Errorf("Error generating QR code: %v", err)
+        return
+    }
 
-	return GCFReturnStruct(response)
+    if fileName != "D31214000_qrcode.png" {
+        t.Errorf("Expected file name 'D3/D412345_qrcode.png', got '%s'", fileName)
+        return
+    }
+
+    t.Log("Berhasil generate code qr")
 }
