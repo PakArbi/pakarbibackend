@@ -2,7 +2,6 @@ package pakarbibackend
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"regexp"
@@ -651,7 +650,7 @@ func GCFGetAllParkiranID(MONGOCONNSTRINGENV, dbname, collectionname string, r *h
 	}
 }
 
-func GCFGetAllParkiranID2(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+func GCFGetParkiranById(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
     mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
     var dataparkiran Parkiran
@@ -660,15 +659,14 @@ func GCFGetAllParkiranID2(MONGOCONNSTRINGENV, dbname, collectionname string, r *
         return GCFReturnStruct(CreateResponse(false, "Error parsing JSON: "+err.Error(), nil))
     }
 
-    parkiran, err := GetAllParkiranID(mconn, collectionname, dataparkiran.Parkiranid)
+    parkiran, err := GetParkiranById(mconn, collectionname, dataparkiran.Parkiranid)
     if err != nil {
-        return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Parkiran: "+err.Error(), nil))
+        return GCFReturnStruct(CreateResponse(false, "Failed to Get Parkiran by ID: "+err.Error(), nil))
     }
 
     if parkiran != (Parkiran{}) {
-        return GCFReturnStruct(CreateResponse(true, "Success: Get ID Parkiran", parkiran))
+        return GCFReturnStruct(CreateResponse(true, "Success: Get Parkiran by ID", parkiran))
     } else {
         return GCFReturnStruct(CreateResponse(false, "No parkiran found with ID: "+dataparkiran.Parkiranid, nil))
     }
 }
-

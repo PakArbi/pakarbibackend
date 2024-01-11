@@ -177,6 +177,20 @@ func GetOneParkiranData(mongoconn *mongo.Database, colname, Pkrid string) (dest 
 	return
 }
 
+func GetParkiranById(mconn *mongo.Database, collectionname, parkiranID string) (Parkiran, error) {
+    collection := mconn.Collection(collectionname)
+
+    var result Parkiran
+    filter := bson.D{{"parkiranid", parkiranID}}
+
+    err := collection.FindOne(context.Background(), filter).Decode(&result)
+    if err != nil {
+        return Parkiran{}, err
+    }
+
+    return result, nil
+}
+
 //function Parkiran
 func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKendaraan, nomorKendaraan, jenisKendaraan, statusMessage, waktuMasuk, waktuKeluar string) (InsertedID interface{}) {
 	parkiranID := GenerateParkiranID(npm)
