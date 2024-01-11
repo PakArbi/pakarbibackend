@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"log"
 	"os"
 
 	"github.com/disintegration/imaging"
+	"github.com/nfnt/resize"
 	"github.com/skip2/go-qrcode"
 
 	"github.com/aiteung/atdb"
@@ -80,54 +82,63 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 }
 
 func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, logoFilePath, outputFilePath string) error {
+	// Convert struct to JSON
 	dataJSON, err := json.Marshal(DataParkir)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON: %v", err)
 	}
 
+	// Generate QR code
 	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
 	if err != nil {
 		return fmt.Errorf("failed to generate QR code: %v", err)
 	}
 
+	// Decode the QR code image
 	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
 	if err != nil {
 		return fmt.Errorf("failed to decode QR code image: %v", err)
 	}
 
+	// Open the logo file
 	logoFile, err := os.Open(logoFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to open logo file: %v", err)
 	}
 	defer logoFile.Close()
 
+	// Decode the logo image
 	logo, _, err := image.Decode(logoFile)
 	if err != nil {
 		return fmt.Errorf("failed to decode logo image: %v", err)
 	}
 
-	resizedLogo := imaging.Resize(logo, 80, 0, imaging.Lanczos)
+	// Resize the logo to fit within the QR code
+	resizedLogo := resize.Resize(80, 0, logo, resize.Lanczos3)
 
+	// Calculate position to overlay the logo on the QR code
 	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
 	y := (qrImage.Bounds().Dy() - resizedLogo.Bounds().Dy()) / 2
 
+	// Draw the logo onto the QR code
 	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
 
+	// Create the output file
 	outFile, err := os.Create(outputFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %v", err)
 	}
 	defer outFile.Close()
 
+	// Encode the final image into the output file
 	err = imaging.Encode(outFile, result, imaging.PNG)
 	if err != nil {
 		return fmt.Errorf("failed to encode image: %v", err)
 	}
 
-	fmt.Println("QR code generated successfully")
+	log.Printf("QR code generated successfully and saved to %s", outputFilePath)
 	return nil
 }
-
 
 // <--- FUNCTION CRUD --->
 func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
