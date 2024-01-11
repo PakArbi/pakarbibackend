@@ -387,7 +387,7 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 					})
 
 					// Generate QR code with ULBI logo
-					qrLogoPath := "C:\\path\\to\\logo_ulbi.png" // Sesuaikan dengan path logo yang benar
+					qrLogoPath := "C:\\Users\\ACER\\Documents\\qrparkir\\logo_ulbi.png" // Sesuaikan dengan path logo yang benar
 					qrOutputPath := "C:\\Users\\ACER\\Documents\\qrparkir\\" + dataparkiran.Parkiranid + "_qrcode.png"
 
 					err := GenerateQRCodeWithLogoULBI(dataparkiran, qrLogoPath, qrOutputPath)

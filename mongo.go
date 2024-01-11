@@ -181,7 +181,7 @@ func GetParkiranById(mconn *mongo.Database, collectionname, parkiranID string) (
     collection := mconn.Collection(collectionname)
 
     var result Parkiran
-    filter := bson.D{{"parkiranid", parkiranID}}
+    filter := bson.D{{Key: "parkiranid", Value: parkiranID}}
 
     err := collection.FindOne(context.Background(), filter).Decode(&result)
     if err != nil {
