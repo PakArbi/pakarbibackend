@@ -1,17 +1,15 @@
 package pakarbibackend
 
 import (
-	"context"
-	"fmt"
-	"os"
 	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
 	"image"
+	"os"
 
-
-	"github.com/skip2/go-qrcode"
 	"github.com/disintegration/imaging"
-
+	"github.com/skip2/go-qrcode"
 
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
@@ -19,10 +17,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	
 )
 
-//<---Function Generate Code QR--->
+// <---Function Generate Code QR--->
 func GenerateQRCodeWithLogo(DataParkir Parkiran) error {
 	// Convert struct to JSON
 	dataJSON, err := json.Marshal(DataParkir)
@@ -78,9 +75,8 @@ func GenerateQRCodeWithLogo(DataParkir Parkiran) error {
 		return fmt.Errorf("failed to encode image: %v", err)
 	}
 
-	 // jika input data generate code qr maka akan menampilkan pesan succes
-	 fmt.Println("QR code generated successfully") // Menampilkan pesan berhasil ke konsol
-
+	// jika input data generate code qr maka akan menampilkan pesan succes
+	fmt.Println("QR code generated successfully") // Menampilkan pesan berhasil ke konsol
 
 	return nil
 }
@@ -279,7 +275,7 @@ func CreateAdmin(mongoconn *mongo.Database, collection string, admindata Admin) 
 	return atdb.InsertOneDoc(mongoconn, collection, admindata)
 }
 
-//function mekanisme untuk auto-increment
+// function mekanisme untuk auto-increment
 func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
 	filter := bson.M{"_id": sequenceName}
 	update := bson.M{"$inc": bson.M{"seq": 1}}
@@ -299,13 +295,14 @@ func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
 	}
 	return result.Seq
 }
+
 // <---FUNCTION GENERATE FOR PARKIRANID --->
 func GenerateParkiranID(npm string) string {
-    // Contoh: Jika NPM adalah '1214000'. maka yang diambil '4000'
-    // Anda dapat menggunakan beberapa digit terakhir dari NPM
-    // Misalnya, mengambil 4 digit terakhir (atau lebih sesuai kebutuhan)
-    lastDigits := npm[len(npm)-4:] // Mengambil 4 digit terakhir dari NPM
-    return "D3/D4" + lastDigits    // Menggabungkan pola dengan digit terakhir dari NPM
+	// Contoh: Jika NPM adalah '1214000'. maka yang diambil '4000'
+	// Anda dapat menggunakan beberapa digit terakhir dari NPM
+	// Misalnya, mengambil 4 digit terakhir (atau lebih sesuai kebutuhan)
+	lastDigits := npm[len(npm)-4:] // Mengambil 4 digit terakhir dari NPM
+	return "D3/D4" + lastDigits    // Menggabungkan pola dengan digit terakhir dari NPM
 }
 
 // <--- FUNCTION CRUD PARKIRAN --->
