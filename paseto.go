@@ -490,6 +490,7 @@ func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, co
 	return GCFReturnStruct(response)
 }
 
+//GCF UPdate Data
 func GCFUpdateParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
@@ -559,6 +560,8 @@ func GCFUpdateParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	}
 	return GCFReturnStruct(response)
 }
+
+//GCF Hapus Data 
 
 func GCFDeleteParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var respon Credential
@@ -697,3 +700,25 @@ func GCFGetAllParkiranID(MONGOCONNSTRINGENV, dbname, collectionname string, r *h
 		return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Parkiran", dataparkiran))
 	}
 }
+
+func GCFGetAllParkiranID2(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+    mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+    var dataparkiran Parkiran
+    err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+    if err != nil {
+        return GCFReturnStruct(CreateResponse(false, "Error parsing JSON: "+err.Error(), nil))
+    }
+
+    parkiran, err := GetAllParkiranID(mconn, collectionname, dataparkiran.Parkiranid)
+    if err != nil {
+        return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Parkiran: "+err.Error(), nil))
+    }
+
+    if parkiran != (Parkiran{}) {
+        return GCFReturnStruct(CreateResponse(true, "Success: Get ID Parkiran", parkiran))
+    } else {
+        return GCFReturnStruct(CreateResponse(false, "No parkiran found with ID: "+dataparkiran.Parkiranid, nil))
+    }
+}
+
