@@ -1,15 +1,17 @@
 package pakarbibackend
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"image"
 	"os"
+	"bytes"
+	"encoding/json"
+	"image"
 
-	"github.com/disintegration/imaging"
+
 	"github.com/skip2/go-qrcode"
+	"github.com/disintegration/imaging"
+
 
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
@@ -17,39 +19,40 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	
 )
 
-// <---Function Generate Code QR--->
-func GenerateQRCodeWithLogo(DataParkir Parkiran) error {
+//<---Function Generate Code QR--->
+func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (string, error) {
 	// Convert struct to JSON
-	dataJSON, err := json.Marshal(DataParkir)
+	dataJSON, err := json.Marshal(dataparkiran)
 	if err != nil {
-		return fmt.Errorf("failed to marshal JSON: %v", err)
+		return "", fmt.Errorf("failed to marshal JSON: %v", err)
 	}
 
 	// Generate QR code
 	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
 	if err != nil {
-		return fmt.Errorf("failed to generate QR code: %v", err)
+		return "", fmt.Errorf("failed to generate QR code: %v", err)
 	}
 
 	// Create an image from the QR code
 	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
 	if err != nil {
-		return fmt.Errorf("failed to decode QR code image: %v", err)
+		return "", fmt.Errorf("failed to decode QR code image: %v", err)
 	}
 
 	// Open the ULBI logo file
 	logoFile, err := os.Open("logo_ulbi.png") // Replace with your ULBI logo file path
 	if err != nil {
-		return fmt.Errorf("failed to open logo file: %v", err)
+		return "", fmt.Errorf("failed to open logo file: %v", err)
 	}
 	defer logoFile.Close()
 
 	// Decode the ULBI logo
 	logo, _, err := image.Decode(logoFile)
 	if err != nil {
-		return fmt.Errorf("failed to decode logo image: %v", err)
+		return "", fmt.Errorf("failed to decode logo image: %v", err)
 	}
 
 	// Resize the logo to fit within the QR code
@@ -62,74 +65,22 @@ func GenerateQRCodeWithLogo(DataParkir Parkiran) error {
 	// Draw the logo onto the QR code
 	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
 
-	// Save the final QR code with logo
-	outFile, err := os.Create("qrcode.png") // Replace with desired output file name
-	if err != nil {
-		return fmt.Errorf("failed to create output file: %v", err)
-	}
-	defer outFile.Close()
-
-	// Encode the final image into the output file
-	err = imaging.Encode(outFile, result, imaging.PNG)
-	if err != nil {
-		return fmt.Errorf("failed to encode image: %v", err)
-	}
-
-	// jika input data generate code qr maka akan menampilkan pesan succes
-	fmt.Println("QR code generated successfully") // Menampilkan pesan berhasil ke konsol
-
-	return nil
+	 // Save the final QR code with logo
+	 fileName := dataparkiran.Parkiranid + "_qrcode.png" // Using Parkiran ID in the file name
+	 outFile, err := os.Create(fileName)
+	 if err != nil {
+		 return "", fmt.Errorf("failed to create output file: %v", err)
+	 }
+	 defer outFile.Close()
+ 
+	 // Encode the final image into the output file
+	 err = imaging.Encode(outFile, result, imaging.PNG)
+	 if err != nil {
+		 return "", fmt.Errorf("failed to encode image: %v", err)
+	 }
+ 
+	 return fileName, nil
 }
-
-func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, logoFilePath, outputFilePath string) error {
-	dataJSON, err := json.Marshal(DataParkir)
-	if err != nil {
-		return fmt.Errorf("failed to marshal JSON: %v", err)
-	}
-
-	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
-	if err != nil {
-		return fmt.Errorf("failed to generate QR code: %v", err)
-	}
-
-	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
-	if err != nil {
-		return fmt.Errorf("failed to decode QR code image: %v", err)
-	}
-
-	logoFile, err := os.Open(logoFilePath)
-	if err != nil {
-		return fmt.Errorf("failed to open logo file: %v", err)
-	}
-	defer logoFile.Close()
-
-	logo, _, err := image.Decode(logoFile)
-	if err != nil {
-		return fmt.Errorf("failed to decode logo image: %v", err)
-	}
-
-	resizedLogo := imaging.Resize(logo, 80, 0, imaging.Lanczos)
-
-	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
-	y := (qrImage.Bounds().Dy() - resizedLogo.Bounds().Dy()) / 2
-
-	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
-
-	outFile, err := os.Create(outputFilePath)
-	if err != nil {
-		return fmt.Errorf("failed to create output file: %v", err)
-	}
-	defer outFile.Close()
-
-	err = imaging.Encode(outFile, result, imaging.PNG)
-	if err != nil {
-		return fmt.Errorf("failed to encode image: %v", err)
-	}
-
-	fmt.Println("QR code generated successfully")
-	return nil
-}
-
 
 // <--- FUNCTION CRUD --->
 func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
@@ -325,7 +276,7 @@ func CreateAdmin(mongoconn *mongo.Database, collection string, admindata Admin) 
 	return atdb.InsertOneDoc(mongoconn, collection, admindata)
 }
 
-// function mekanisme untuk auto-increment
+//function mekanisme untuk auto-increment
 func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
 	filter := bson.M{"_id": sequenceName}
 	update := bson.M{"$inc": bson.M{"seq": 1}}
@@ -345,14 +296,13 @@ func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
 	}
 	return result.Seq
 }
-
 // <---FUNCTION GENERATE FOR PARKIRANID --->
 func GenerateParkiranID(npm string) string {
-	// Contoh: Jika NPM adalah '1214000'. maka yang diambil '4000'
-	// Anda dapat menggunakan beberapa digit terakhir dari NPM
-	// Misalnya, mengambil 4 digit terakhir (atau lebih sesuai kebutuhan)
-	lastDigits := npm[len(npm)-4:] // Mengambil 4 digit terakhir dari NPM
-	return "D3/D4" + lastDigits    // Menggabungkan pola dengan digit terakhir dari NPM
+    // Contoh: Jika NPM adalah '1214000'. maka yang diambil '4000'
+    // Anda dapat menggunakan beberapa digit terakhir dari NPM
+    // Misalnya, mengambil 4 digit terakhir (atau lebih sesuai kebutuhan)
+    lastDigits := npm[len(npm)-4:] // Mengambil 4 digit terakhir dari NPM
+    return "D3/D4" + lastDigits    // Menggabungkan pola dengan digit terakhir dari NPM
 }
 
 // <--- FUNCTION CRUD PARKIRAN --->
