@@ -23,36 +23,36 @@ import (
 )
 
 //<---Function Generate Code QR--->
-func GenerateQRCodeWithLogo(DataParkir Parkiran) error {
+func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (string, error) {
 	// Convert struct to JSON
-	dataJSON, err := json.Marshal(DataParkir)
+	dataJSON, err := json.Marshal(dataparkiran)
 	if err != nil {
-		return fmt.Errorf("failed to marshal JSON: %v", err)
+		return "", fmt.Errorf("failed to marshal JSON: %v", err)
 	}
 
 	// Generate QR code
 	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
 	if err != nil {
-		return fmt.Errorf("failed to generate QR code: %v", err)
+		return "", fmt.Errorf("failed to generate QR code: %v", err)
 	}
 
 	// Create an image from the QR code
 	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
 	if err != nil {
-		return fmt.Errorf("failed to decode QR code image: %v", err)
+		return "", fmt.Errorf("failed to decode QR code image: %v", err)
 	}
 
 	// Open the ULBI logo file
 	logoFile, err := os.Open("logo_ulbi.png") // Replace with your ULBI logo file path
 	if err != nil {
-		return fmt.Errorf("failed to open logo file: %v", err)
+		return "", fmt.Errorf("failed to open logo file: %v", err)
 	}
 	defer logoFile.Close()
 
 	// Decode the ULBI logo
 	logo, _, err := image.Decode(logoFile)
 	if err != nil {
-		return fmt.Errorf("failed to decode logo image: %v", err)
+		return "", fmt.Errorf("failed to decode logo image: %v", err)
 	}
 
 	// Resize the logo to fit within the QR code
@@ -65,24 +65,21 @@ func GenerateQRCodeWithLogo(DataParkir Parkiran) error {
 	// Draw the logo onto the QR code
 	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
 
-	// Save the final QR code with logo
-	outFile, err := os.Create("qrcode.png") // Replace with desired output file name
-	if err != nil {
-		return fmt.Errorf("failed to create output file: %v", err)
-	}
-	defer outFile.Close()
-
-	// Encode the final image into the output file
-	err = imaging.Encode(outFile, result, imaging.PNG)
-	if err != nil {
-		return fmt.Errorf("failed to encode image: %v", err)
-	}
-
-	 // jika input data generate code qr maka akan menampilkan pesan succes
-	 fmt.Println("QR code generated successfully") // Menampilkan pesan berhasil ke konsol
-
-
-	return nil
+	 // Save the final QR code with logo
+	 fileName := dataparkiran.Parkiranid + "_qrcode.png" // Using Parkiran ID in the file name
+	 outFile, err := os.Create(fileName)
+	 if err != nil {
+		 return "", fmt.Errorf("failed to create output file: %v", err)
+	 }
+	 defer outFile.Close()
+ 
+	 // Encode the final image into the output file
+	 err = imaging.Encode(outFile, result, imaging.PNG)
+	 if err != nil {
+		 return "", fmt.Errorf("failed to encode image: %v", err)
+	 }
+ 
+	 return fileName, nil
 }
 
 // <--- FUNCTION CRUD --->

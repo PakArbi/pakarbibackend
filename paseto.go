@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"time"
 
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
@@ -257,23 +258,31 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					insertParkiran(mconn, collparkiran, Parkiran{
-						Parkiranid:     dataparkiran.Parkiranid,
-						Nama:           dataparkiran.Nama,
-						NPM:            dataparkiran.NPM,
-						Prodi:          dataparkiran.Prodi,
-						NamaKendaraan:  dataparkiran.NamaKendaraan,
-						NomorKendaraan: dataparkiran.NomorKendaraan,
-						JenisKendaraan: dataparkiran.JenisKendaraan,
-						Status:         dataparkiran.Status,
-					})
-					response.Status = true
-					response.Message = "Berhasil Insert Data Parkiran"
+					// Generate ParkiranID using the function
+					dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
 
-					// Generate QR Code with Logo
-					err = GenerateQRCodeWithLogo(dataparkiran)
+					// Memeriksa apakah sudah ada waktu keluar, jika tidak maka dianggap 'sudah masuk Parkir'
+					if dataparkiran.Status.WaktuKeluar == "" {
+						dataparkiran.Status = Status{
+							Message:    "sudah masuk Parkir",
+							WaktuMasuk: time.Now().Format(time.RFC3339),
+						}
+					} else {
+						dataparkiran.Status = Status{
+							Message:     "sudah keluar Parkir",
+							WaktuKeluar: dataparkiran.Status.WaktuKeluar,
+							WaktuMasuk:  dataparkiran.Status.WaktuMasuk,
+						}
+					}
+
+					// Insert parkiran data
+					fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
 					if err != nil {
 						response.Message = "Error generating QR code: " + err.Error()
+					} else {
+						response.Status = true
+						response.Message = "Berhasil Insert Data Parkiran"
+						response.Data = fileName // Add the file name to the response
 					}
 				}
 			} else {
@@ -281,8 +290,10 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 			}
 		}
 	}
+
 	return GCFReturnStruct(response)
 }
+
 
 func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
@@ -306,23 +317,31 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					insertParkiran(mconn, collparkiran, Parkiran{
-						Parkiranid:     dataparkiran.Parkiranid,
-						Nama:           dataparkiran.Nama,
-						NPM:            dataparkiran.NPM,
-						Prodi:          dataparkiran.Prodi,
-						NamaKendaraan:  dataparkiran.NamaKendaraan,
-						NomorKendaraan: dataparkiran.NomorKendaraan,
-						JenisKendaraan: dataparkiran.JenisKendaraan,
-						Status:         dataparkiran.Status,
-					})
-					response.Status = true
-					response.Message = "Berhasil Insert Data Parkiran"
+					// Generate ParkiranID using the function
+					dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
 
-					// Generate QR Code with Logo
-					err = GenerateQRCodeWithLogo(dataparkiran)
+					// Memeriksa apakah sudah ada waktu keluar, jika tidak maka dianggap 'sudah masuk Parkir'
+					if dataparkiran.Status.WaktuKeluar == "" {
+						dataparkiran.Status = Status{
+							Message:    "sudah masuk Parkir",
+							WaktuMasuk: time.Now().Format(time.RFC3339),
+						}
+					} else {
+						dataparkiran.Status = Status{
+							Message:     "sudah keluar Parkir",
+							WaktuKeluar: dataparkiran.Status.WaktuKeluar,
+							WaktuMasuk:  dataparkiran.Status.WaktuMasuk,
+						}
+					}
+
+					// Insert parkiran data
+					fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
 					if err != nil {
 						response.Message = "Error generating QR code: " + err.Error()
+					} else {
+						response.Status = true
+						response.Message = "Berhasil Insert Data Parkiran"
+						response.Data = fileName // Add the file name to the response
 					}
 				}
 			} else {
@@ -330,6 +349,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 			}
 		}
 	}
+
 	return GCFReturnStruct(response)
 }
 

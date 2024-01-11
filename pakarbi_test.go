@@ -1,8 +1,10 @@
 package pakarbibackend
 
 import (
+	"time"
 	"fmt"
 	"testing"
+
 
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
@@ -165,4 +167,64 @@ func TestLoginn(t *testing.T) {
 	userdata.PasswordHash = "pakarbipass"
 	IsPasswordValidNPM(mconn, "user", userdata)
 	fmt.Println(userdata)
+}
+
+
+//proses untuk generate code qr
+func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+	var response Credential
+	response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var userdata User
+	gettoken := r.Header.Get("Login")
+	if gettoken == "" {
+		response.Message = "Header Login Not Exist"
+	} else {
+		// Process the request with the "Login" token
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		userdata.NPM = checktoken
+		if checktoken == "" {
+			response.Message = "Kamu kayaknya belum punya akun"
+		} else {
+			user2 := FindUserEmail(mconn, colluser, userdata)
+			if user2.Role == "user" {
+				var dataparkiran Parkiran
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+				if err != nil {
+					response.Message = "Error parsing application/json: " + err.Error()
+				} else {
+					// Generate ParkiranID using the function
+					dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
+
+					// Memeriksa apakah sudah ada waktu keluar, jika tidak maka dianggap 'sudah masuk Parkir'
+					if dataparkiran.Status.WaktuKeluar == "" {
+						dataparkiran.Status = Status{
+							Message:    "sudah masuk Parkir",
+							WaktuMasuk: time.Now().Format(time.RFC3339),
+						}
+					} else {
+						dataparkiran.Status = Status{
+							Message:     "sudah keluar Parkir",
+							WaktuKeluar: dataparkiran.Status.WaktuKeluar,
+							WaktuMasuk:  dataparkiran.Status.WaktuMasuk,
+						}
+					}
+
+					// Insert parkiran data
+					fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
+					if err != nil {
+						response.Message = "Error generating QR code: " + err.Error()
+					} else {
+						response.Status = true
+						response.Message = "Berhasil Insert Data Parkiran"
+						response.Data = fileName // Add the file name to the response
+					}
+				}
+			} else {
+				response.Message = "Anda tidak dapat Insert data karena bukan user"
+			}
+		}
+	}
+
+	return GCFReturnStruct(response)
 }
