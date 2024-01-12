@@ -8,6 +8,7 @@ import (
 	"image"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/disintegration/imaging"
 	"github.com/nfnt/resize"
@@ -81,7 +82,7 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 	return fileName, nil
 }
 
-func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, logoFilePath, outputFilePath string) error {
+func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, outputFileName string) error {
 	// Convert struct to JSON
 	dataJSON, err := json.Marshal(DataParkir)
 	if err != nil {
@@ -95,12 +96,13 @@ func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, logoFilePath, outputFilePat
 	}
 
 	// Decode the QR code image
-	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
+	qrImage, _, err := image.Decode(bytes.NewReader(qrCode))
 	if err != nil {
 		return fmt.Errorf("failed to decode QR code image: %v", err)
 	}
 
 	// Open the logo file
+	logoFilePath := "C:\\Users\\ACER\\Documents\\qrparkir\\logo_ulbi.png"
 	logoFile, err := os.Open(logoFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to open logo file: %v", err)
@@ -123,8 +125,17 @@ func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, logoFilePath, outputFilePat
 	// Draw the logo onto the QR code
 	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
 
+	// Membuat folder jika belum ada
+	outputFolder := "gambarqr"
+	if err := os.MkdirAll(filepath.Join(filepath.Dir(os.Args[0]), outputFolder), 0755); err != nil {
+		return fmt.Errorf("failed to create output folder: %v", err)
+	}
+
+	// Membuat path lengkap untuk menyimpan file QR code
+	outputPath := filepath.Join(filepath.Dir(os.Args[0]), outputFolder, outputFileName)
+
 	// Create the output file
-	outFile, err := os.Create(outputFilePath)
+	outFile, err := os.Create(outputPath)
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %v", err)
 	}
@@ -136,7 +147,7 @@ func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, logoFilePath, outputFilePat
 		return fmt.Errorf("failed to encode image: %v", err)
 	}
 
-	log.Printf("QR code generated successfully and saved to %s", outputFilePath)
+	log.Printf("QR code generated successfully and saved to %s", outputPath)
 	return nil
 }
 
