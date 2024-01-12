@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"time"
 
@@ -387,7 +388,7 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 					})
 
 					// Generate QR code without logo
-					qrOutputPath := "C:\\Users\\ACER\\Documents\\pakarbibackend\\" + dataparkiran.Parkiranid + "_qrcode.png"
+					qrOutputPath := filepath.Join("C:\\Users\\ACER\\Documents\\pakarbibackend\\qrcode", dataparkiran.Parkiranid+"_qrcode.png")
 					err := GenerateQRCode(dataparkiran, qrOutputPath)
 					if err != nil {
 						response.Message = "Failed to generate QR code: " + err.Error()
@@ -405,7 +406,6 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 	}
 	return GCFReturnStruct(response)
 }
-
 
 func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
