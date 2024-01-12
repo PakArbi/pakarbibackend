@@ -387,7 +387,7 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 					})
 
 					// Generate QR code without logo
-					qrOutputPath := "C:\\Users\\ACER\\Downloads\\pakarbibackend\\" + dataparkiran.Parkiranid + "_qrcode.png"
+					qrOutputPath := "C:\\Users\\ACER\\Documents\\pakarbibackend\\" + dataparkiran.Parkiranid + "_qrcode.png"
 					err := GenerateQRCode(dataparkiran, qrOutputPath)
 					if err != nil {
 						response.Message = "Failed to generate QR code: " + err.Error()
