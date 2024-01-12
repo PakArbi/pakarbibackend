@@ -54,39 +54,39 @@ func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (inser
 }
 
 // <---FUNCTION UNTUK MENYIMPAN GAMBAR CODE QR KE MONGODB --->
-func SaveQRCodeToMongoDB(qrCodePath string, mongodbURI string, dbName string, collectionName string) error {
-    // Baca file gambar kode QR
-    qrCodeFile, err := os.Open(qrCodePath)
-    if err != nil {
-        return err
-    }
-    defer qrCodeFile.Close()
+// func SaveQRCodeToMongoDB(qrCodePath string, mongodbURI string, dbName string, collectionName string) error {
+// 	// Baca file gambar kode QR
+// 	qrCodeFile, err := os.Open(qrCodePath)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer qrCodeFile.Close()
 
-    // Baca konten gambar kode QR
-    qrCodeData, err := ioutil.ReadAll(qrCodeFile)
-    if err != nil {
-        return err
-    }
+// 	// Baca konten gambar kode QR
+// 	qrCodeData, err := ioutil.ReadAll(qrCodeFile)
+// 	if err != nil {
+// 		return err
+// 	}
 
-    // Buat koneksi ke MongoDB
-    client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongodbURI))
-    if err != nil {
-        return err
-    }
-    defer client.Disconnect(context.Background())
+// 	// Buat koneksi ke MongoDB
+// 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongodbURI))
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer client.Disconnect(context.Background())
 
-    // Pilih database dan koleksi
-    database := client.Database(dbName)
-    collection := database.Collection(collectionName)
+// 	// Pilih database dan koleksi
+// 	database := client.Database(dbName)
+// 	collection := database.Collection(collectionName)
 
-    // Simpan gambar kode QR ke MongoDB
-    _, err = collection.InsertOne(context.Background(), bson.M{"qrcode": qrCodeData})
-    if err != nil {
-        return err
-    }
+// 	// Simpan gambar kode QR ke MongoDB
+// 	_, err = collection.InsertOne(context.Background(), bson.M{"qrcode": qrCodeData})
+// 	if err != nil {
+// 		return err
+// 	}
 
-    return nil
-}
+// 	return nil
+// }
 
 // <--- FUNCTION USER --->
 func InsertUserdata(MongoConn *mongo.Database, usernameid, username, npm, password, passwordhash, email, role string) (InsertedID interface{}) {
@@ -213,20 +213,20 @@ func GetOneParkiranData(mongoconn *mongo.Database, colname, Pkrid string) (dest 
 }
 
 func GetParkiranById(mconn *mongo.Database, collectionname, parkiranID string) (Parkiran, error) {
-    collection := mconn.Collection(collectionname)
+	collection := mconn.Collection(collectionname)
 
-    var result Parkiran
-    filter := bson.D{{Key: "parkiranid", Value: parkiranID}}
+	var result Parkiran
+	filter := bson.D{{Key: "parkiranid", Value: parkiranID}}
 
-    err := collection.FindOne(context.Background(), filter).Decode(&result)
-    if err != nil {
-        return Parkiran{}, err
-    }
+	err := collection.FindOne(context.Background(), filter).Decode(&result)
+	if err != nil {
+		return Parkiran{}, err
+	}
 
-    return result, nil
+	return result, nil
 }
 
-//function Parkiran
+// function Parkiran
 func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKendaraan, nomorKendaraan, jenisKendaraan, statusMessage, waktuMasuk, waktuKeluar string) (InsertedID interface{}) {
 	parkiranID := GenerateParkiranID(npm)
 	req := Parkiran{
