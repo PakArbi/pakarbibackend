@@ -8,10 +8,8 @@ import (
 	"image"
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/disintegration/imaging"
-	"github.com/nfnt/resize"
 	"github.com/skip2/go-qrcode"
 
 	"github.com/aiteung/atdb"
@@ -82,7 +80,7 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 	return fileName, nil
 }
 
-func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, outputFileName string) error {
+func GenerateQRCode(DataParkir Parkiran, outputFilePath string) error {
 	// Convert struct to JSON
 	dataJSON, err := json.Marshal(DataParkir)
 	if err != nil {
@@ -96,58 +94,25 @@ func GenerateQRCodeWithLogoULBI(DataParkir Parkiran, outputFileName string) erro
 	}
 
 	// Decode the QR code image
-	qrImage, _, err := image.Decode(bytes.NewReader(qrCode))
+	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
 	if err != nil {
 		return fmt.Errorf("failed to decode QR code image: %v", err)
 	}
 
-	// Open the logo file
-	logoFilePath := "C:\\Users\\ACER\\Documents\\qrparkir\\logo_ulbi.png"
-	logoFile, err := os.Open(logoFilePath)
-	if err != nil {
-		return fmt.Errorf("failed to open logo file: %v", err)
-	}
-	defer logoFile.Close()
-
-	// Decode the logo image
-	logo, _, err := image.Decode(logoFile)
-	if err != nil {
-		return fmt.Errorf("failed to decode logo image: %v", err)
-	}
-
-	// Resize the logo to fit within the QR code
-	resizedLogo := resize.Resize(80, 0, logo, resize.Lanczos3)
-
-	// Calculate position to overlay the logo on the QR code
-	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
-	y := (qrImage.Bounds().Dy() - resizedLogo.Bounds().Dy()) / 2
-
-	// Draw the logo onto the QR code
-	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
-
-	// Membuat folder jika belum ada
-	outputFolder := "gambarqr"
-	if err := os.MkdirAll(filepath.Join(filepath.Dir(os.Args[0]), outputFolder), 0755); err != nil {
-		return fmt.Errorf("failed to create output folder: %v", err)
-	}
-
-	// Membuat path lengkap untuk menyimpan file QR code
-	outputPath := filepath.Join(filepath.Dir(os.Args[0]), outputFolder, outputFileName)
-
 	// Create the output file
-	outFile, err := os.Create(outputPath)
+	outFile, err := os.Create(outputFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %v", err)
 	}
 	defer outFile.Close()
 
 	// Encode the final image into the output file
-	err = imaging.Encode(outFile, result, imaging.PNG)
+	err = imaging.Encode(outFile, qrImage, imaging.PNG)
 	if err != nil {
 		return fmt.Errorf("failed to encode image: %v", err)
 	}
 
-	log.Printf("QR code generated successfully and saved to %s", outputPath)
+	log.Printf("QR code generated successfully and saved to %s", outputFilePath)
 	return nil
 }
 

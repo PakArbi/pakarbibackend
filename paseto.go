@@ -386,12 +386,11 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 						Status:         dataparkiran.Status,
 					})
 
-					// Generate QR code with ULBI logo dan menyimpan di direktori proyek
+					// Generate QR code without logo
 					qrOutputPath := "C:\\Users\\ACER\\Downloads\\pakarbibackend\\" + dataparkiran.Parkiranid + "_qrcode.png"
-
-					err = GenerateQRCodeWithLogoULBI(dataparkiran, qrOutputPath)
+					err := GenerateQRCode(dataparkiran, qrOutputPath)
 					if err != nil {
-						response.Message = "Failed to generate QR code with logo: " + err.Error()
+						response.Message = "Failed to generate QR code: " + err.Error()
 						return GCFReturnStruct(response)
 					}
 
@@ -406,6 +405,7 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 	}
 	return GCFReturnStruct(response)
 }
+
 
 func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
