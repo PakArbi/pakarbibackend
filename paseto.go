@@ -451,64 +451,67 @@ func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, co
 }
 
 // <--- FUNCTION UPDATE PARKIRAN 3--->
-// func GCFInsertParkiranNPM3(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
-//     var response Credential
-//     response.Status = false
-//     mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-//     var userdata User
-//     gettoken := r.Header.Get("Login")
-//     if gettoken == "" {
-//         response.Message = "Header Login Not Exist"
-//     } else {
-//         // Process the request with the "Login" token
-//         checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-//         userdata.NPM = checktoken
-//         if checktoken == "" {
-//             response.Message = "Kamu kayaknya belum punya akun"
-//         } else {
-//             user2 := FindUserNPM(mconn, colluser, userdata)
-//             if user2.Role == "user" {
-//                 var dataparkiran Parkiran
-//                 err := json.NewDecoder(r.Body).Decode(&dataparkiran)
-//                 if err != nil {
-//                     response.Message = "Error parsing application/json: " + err.Error()
-//                 } else {
-//                     insertParkiran(mconn, collparkiran, Parkiran{
-//                         Parkiranid:     dataparkiran.Parkiranid,
-//                         Nama:           dataparkiran.Nama,
-//                         NPM:            dataparkiran.NPM,
-//                         Prodi:          dataparkiran.Prodi,
-//                         NamaKendaraan:  dataparkiran.NamaKendaraan,
-//                         NomorKendaraan: dataparkiran.NomorKendaraan,
-//                         JenisKendaraan: dataparkiran.JenisKendaraan,
-//                         Status:         dataparkiran.Status,
-//                     })
+func GCFInsertParkiranNPM3(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+    var response Credential
+    response.Status = false
+    mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+    var userdata User
+    gettoken := r.Header.Get("Login")
+    if gettoken == "" {
+        response.Message = "Header Login Not Exist"
+    } else {
+        // Process the request with the "Login" token
+        checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+        userdata.NPM = checktoken
+        if checktoken == "" {
+            response.Message = "Kamu kayaknya belum punya akun"
+        } else {
+            user2 := FindUserNPM(mconn, colluser, userdata)
+            if user2.Role == "user" {
+                var dataparkiran Parkiran
+                err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+                if err != nil {
+                    response.Message = "Error parsing application/json: " + err.Error()
+                } else {
+                    // Generate QR code without logo
+                    qrOutputPath := filepath.Join("C:\\Users\\Muhammad Faisal A\\OneDrive\\Pictures\\Code QR" + dataparkiran.Parkiranid + "_qrcode.png")
+                    err := GenerateQRCode(dataparkiran, qrOutputPath)
+                    if err != nil {
+                        response.Message = "Failed to generate QR code: " + err.Error()
+                        return GCFReturnStruct(response)
+                    }
 
-//                     // Generate QR code without logo
-//                     qrOutputPath, err := GenerateQRCode(dataparkiran, qrOutputPath)
-//                     if err != nil {
-//                         response.Message = "Failed to generate QR code: " + err.Error()
-//                         return GCFReturnStruct(response)
-//                     }
+                    // Simpan gambar kode QR ke MongoDB
+                    err = SaveQRCodeToMongoDB(qrOutputPath, MONGOCONNSTRINGENV, dbname, "qrcode")
+                    if err != nil {
+                        response.Message = "Failed to save QR code to MongoDB: " + err.Error()
+                        return GCFReturnStruct(response)
+                    }
 
-//                     // Simpan gambar kode QR ke MongoDB
-//                     err = SaveQRCodeToMongoDB(qrOutputPath, MONGOCONNSTRINGENV, dbname, "qrcodes")
-//                     if err != nil {
-//                         response.Message = "Failed to save QR code to MongoDB: " + err.Error()
-//                         return GCFReturnStruct(response)
-//                     }
+                    // Insert parkiran data
+                    insertParkiran(mconn, collparkiran, Parkiran{
+                        Parkiranid:     dataparkiran.Parkiranid,
+                        Nama:           dataparkiran.Nama,
+                        NPM:            dataparkiran.NPM,
+                        Prodi:          dataparkiran.Prodi,
+                        NamaKendaraan:  dataparkiran.NamaKendaraan,
+                        NomorKendaraan: dataparkiran.NomorKendaraan,
+                        JenisKendaraan: dataparkiran.JenisKendaraan,
+                        Status:         dataparkiran.Status,
+                    })
 
-//                     response.Status = true
-//                     response.Message = "Berhasil Insert Data Parkiran"
-//                     response.Data = qrOutputPath // Menambahkan path QR code ke respons
-//                 }
-//             } else {
-//                 response.Message = "Anda tidak dapat Insert data karena bukan user"
-//             }
-//         }
-//     }
-//     return GCFReturnStruct(response)
-// }
+                    response.Status = true
+                    response.Message = "Berhasil Insert Data Parkiran"
+                    response.Data = qrOutputPath // Menambahkan path QR code ke respons
+                }
+            } else {
+                response.Message = "Anda tidak dapat Insert data karena bukan user"
+            }
+        }
+    }
+    return GCFReturnStruct(response)
+}
+
 
 // GCF UPdate Data
 func GCFUpdateParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {

@@ -54,39 +54,36 @@ func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (inser
 }
 
 // <---FUNCTION UNTUK MENYIMPAN GAMBAR CODE QR KE MONGODB --->
-// func SaveQRCodeToMongoDB(qrCodePath string, mongodbURI string, dbName string, collectionName string) error {
-// 	// Baca file gambar kode QR
-// 	qrCodeFile, err := os.Open(qrCodePath)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer qrCodeFile.Close()
+func SaveQRCodeToMongoDB(qrCodePath string, MONGOCONNSTRINGENV, dbName, collectionName string) error {
+	// Buat koneksi ke MongoDB
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbName)
 
-// 	// Baca konten gambar kode QR
-// 	qrCodeData, err := ioutil.ReadAll(qrCodeFile)
-// 	if err != nil {
-// 		return err
-// 	}
+	// Baca file gambar kode QR
+	qrCodeFile, err := os.Open(qrCodePath)
+	if err != nil {
+		return err
+	}
+	defer qrCodeFile.Close()
 
-// 	// Buat koneksi ke MongoDB
-// 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongodbURI))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer client.Disconnect(context.Background())
+	// Baca konten gambar kode QR
+	qrCodeData, err := ioutil.ReadAll(qrCodeFile)
+	if err != nil {
+		return err
+	}
 
-// 	// Pilih database dan koleksi
-// 	database := client.Database(dbName)
-// 	collection := database.Collection(collectionName)
+	// Pilih database dan koleksi
+	database := mconn.Database(dbName)
+	collection := database.Collection(collectionName)
 
-// 	// Simpan gambar kode QR ke MongoDB
-// 	_, err = collection.InsertOne(context.Background(), bson.M{"qrcode": qrCodeData})
-// 	if err != nil {
-// 		return err
-// 	}
+	// Simpan gambar kode QR ke MongoDB
+	_, err = collection.InsertOne(context.Background(), bson.M{"qrcode": qrCodeData})
+	if err != nil {
+		return err
+	}
 
-// 	return nil
-// }
+	return nil
+}
+
 
 // <--- FUNCTION USER --->
 func InsertUserdata(MongoConn *mongo.Database, usernameid, username, npm, password, passwordhash, email, role string) (InsertedID interface{}) {
