@@ -139,6 +139,36 @@ func GenerateQRCode(DataParkir Parkiran, outputFilePath string) error {
 	return nil
 }
 
+func GenerateQRCodeULBI(dataParkir Parkiran) (string, error) {
+	// Convert struct to JSON
+	dataJSON, err := json.Marshal(dataParkir)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal JSON: %v", err)
+	}
+
+	// Generate QR code
+	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate QR code: %v", err)
+	}
+
+	// Create the output file
+	qrOutputPath := "C:\\Users\\ACER\\Documents\\pakarbibackend\\qrcode\\" + dataParkir.Parkiranid + "_qrcode.png"
+	outFile, err := os.Create(qrOutputPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to create output file: %v", err)
+	}
+	defer outFile.Close()
+
+	// Write the QR code to the file
+	_, err = outFile.Write(qrCode)
+	if err != nil {
+		return "", fmt.Errorf("failed to write QR code to file: %v", err)
+	}
+
+	return qrOutputPath, nil
+}
+
 // <--- FUNCTION CRUD --->
 func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
 	collection := db.Collection(col)

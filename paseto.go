@@ -429,6 +429,71 @@ func GCFInsertParkiranNPM2(publickey,MONGOCONNSTRINGENV, dbname, colluser, collp
 	return GCFReturnStruct(response)
 }
 
+func GCFInsertParkiranNPM4(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, w http.ResponseWriter, r *http.Request) {
+	var response Credential
+	response.Status = false
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	var userdata User
+	gettoken := r.Header.Get("Login")
+	if gettoken == "" {
+		response.Message = "Header Login Not Exist"
+	} else {
+		// Process the request with the "Login" token
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		userdata.NPM = checktoken
+		if checktoken == "" {
+			response.Message = "Kamu kayaknya belum punya akun"
+		} else {
+			user2 := FindUserNPM(mconn, colluser, userdata)
+			if user2.Role == "user" {
+				var dataparkiran Parkiran
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+				if err != nil {
+					response.Message = "Error parsing application/json: " + err.Error()
+				} else {
+					insertParkiran(mconn, collparkiran, Parkiran{
+						Parkiranid:     dataparkiran.Parkiranid,
+						Nama:           dataparkiran.Nama,
+						NPM:            dataparkiran.NPM,
+						Prodi:          dataparkiran.Prodi,
+						NamaKendaraan:  dataparkiran.NamaKendaraan,
+						NomorKendaraan: dataparkiran.NomorKendaraan,
+						JenisKendaraan: dataparkiran.JenisKendaraan,
+						Status: Status{
+							Message:    "Akun Aktif",
+							WaktuMasuk: time.Now().Format(time.RFC3339),
+						},
+					})
+
+					// Generate QR code
+					qrOutputPath, err := GenerateQRCodeULBI(dataparkiran)
+					if err != nil {
+						response.Message = "Failed to generate QR code: " + err.Error()
+						sendResponse(w, response)
+						return
+					}
+
+					response.Status = true
+					response.Message = "Berhasil Insert Data Parkiran"
+					response.Data = qrOutputPath // Menambahkan path QR code ke respons
+
+					sendResponse(w, response)
+				}
+			} else {
+				response.Message = "Anda tidak dapat Insert data karena bukan user"
+				sendResponse(w, response)
+			}
+		}
+	}
+}
+
+// sendResponse is a utility function to send a JSON response.
+func sendResponse(w http.ResponseWriter, response interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
 func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
