@@ -8,6 +8,7 @@ import (
 	"image"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/disintegration/imaging"
 	"github.com/skip2/go-qrcode"
@@ -80,6 +81,21 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 	return fileName, nil
 }
 
+// PathQRCode menyimpan path untuk folder QR code.
+const PathQRCode = "C:\\Users\\ACER\\Documents\\pakarbibackend\\qrcode"
+
+// InitQRCodeFolder membuat folder QR code jika belum ada.
+func InitQRCodeFolder() error {
+	if _, err := os.Stat(PathQRCode); os.IsNotExist(err) {
+		err := os.Mkdir(PathQRCode, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// GenerateQRCode menghasilkan QR code dari data parkiran dan menyimpannya di path yang ditentukan.
 func GenerateQRCode(DataParkir Parkiran, outputFilePath string) error {
 	// Convert struct to JSON
 	dataJSON, err := json.Marshal(DataParkir)
@@ -94,9 +110,16 @@ func GenerateQRCode(DataParkir Parkiran, outputFilePath string) error {
 	}
 
 	// Decode the QR code image
-	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
+	qrImage, _, err := image.Decode(bytes.NewReader(qrCode))
 	if err != nil {
 		return fmt.Errorf("failed to decode QR code image: %v", err)
+	}
+
+	// Create the output directory if it doesn't exist
+	outputDir := filepath.Dir(outputFilePath)
+	err = os.MkdirAll(outputDir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create output directory: %v", err)
 	}
 
 	// Create the output file
