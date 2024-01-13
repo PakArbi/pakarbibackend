@@ -301,7 +301,10 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
+					sendResponse(w, response)
+    				return
 				} else {
+
 					// Menyisipkan data parkiran ke MongoDB
 					insertParkiran(mconn, collparkiran, Parkiran{
 						Parkiranid:     dataparkiran.Parkiranid,
@@ -315,7 +318,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 					})
 
 					// Generate QR code with logo and get the file name
-					qrFileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
+					qrFileName, err := GenerateQRCodeLogoSaveLocal(mconn, dataparkiran)
 					if err != nil {
 						response.Message = "Failed to generate QR code: " + err.Error()
 						sendResponse(w, response)
