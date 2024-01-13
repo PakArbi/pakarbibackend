@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"time"
 
@@ -353,7 +354,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 }
 
 // <--- FUNCTION INSERT PARKIRAN 2 --->
-func GCFInsertParkiranNPM2(publickey,MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	// Inisialisasi folder QR code
 	err := InitQRCodeFolder()
 	if err != nil {
@@ -429,28 +430,48 @@ func GCFInsertParkiranNPM2(publickey,MONGOCONNSTRINGENV, dbname, colluser, collp
 	return GCFReturnStruct(response)
 }
 
-func GCFInsertParkiranNPM4(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, w http.ResponseWriter, r *http.Request) {
+func GCFInsertParkiranNPM4(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+	// Inisialisasi folder QR code
+	err := InitQRCodeFolder()
+	if err != nil {
+		return GCFReturnStruct(Credential{Status: false, Message: "Failed to initialize QR code folder"})
+	}
+
+	// Set koneksi MongoDB
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	// Inisialisasi respons
 	var response Credential
 	response.Status = false
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
+
+	// Mendapatkan data token dari header
 	gettoken := r.Header.Get("Login")
+
+	// Memeriksa apakah token ada
 	if gettoken == "" {
 		response.Message = "Header Login Not Exist"
 	} else {
-		// Process the request with the "Login" token
+		// Proses permintaan dengan token "Login"
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		var userdata User
 		userdata.NPM = checktoken
+
+		// Memeriksa apakah token valid
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
 		} else {
 			user2 := FindUserNPM(mconn, colluser, userdata)
+
+			// Memeriksa apakah pengguna memiliki peran "user"
 			if user2.Role == "user" {
 				var dataparkiran Parkiran
+
+				// Membaca dan mendecode data parkiran dari body request
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
+					// Menyisipkan data parkiran ke MongoDB
 					insertParkiran(mconn, collparkiran, Parkiran{
 						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
@@ -459,39 +480,30 @@ func GCFInsertParkiranNPM4(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 						NamaKendaraan:  dataparkiran.NamaKendaraan,
 						NomorKendaraan: dataparkiran.NomorKendaraan,
 						JenisKendaraan: dataparkiran.JenisKendaraan,
-						Status: Status{
-							Message:    "Akun Aktif",
-							WaktuMasuk: time.Now().Format(time.RFC3339),
-						},
+						Status:         dataparkiran.Status,
 					})
 
-					// Generate QR code
-					qrOutputPath, err := GenerateQRCodeULBI(dataparkiran)
+					// Generate QR code tanpa logo
+					qrOutputPath := filepath.Join("C:\\Users\\ACER\\Documents\\pakarbibackend\\qrcode", dataparkiran.Parkiranid+"_qrcode.png")
+					err := GenerateQRCode(dataparkiran, qrOutputPath)
 					if err != nil {
 						response.Message = "Failed to generate QR code: " + err.Error()
-						sendResponse(w, response)
-						return
+						return GCFReturnStruct(response)
 					}
 
+					// Setel respons berhasil
 					response.Status = true
 					response.Message = "Berhasil Insert Data Parkiran"
-					response.Data = qrOutputPath // Menambahkan path QR code ke respons
-
-					sendResponse(w, response)
+					response.Data = qrOutputPath
 				}
 			} else {
 				response.Message = "Anda tidak dapat Insert data karena bukan user"
-				sendResponse(w, response)
 			}
 		}
 	}
-}
 
-// sendResponse is a utility function to send a JSON response.
-func sendResponse(w http.ResponseWriter, response interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	// Mengembalikan respons dalam bentuk string JSON
+	return GCFReturnStruct(response)
 }
 
 func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {

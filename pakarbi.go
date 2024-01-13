@@ -87,10 +87,13 @@ const PathQRCode = "C:\\Users\\ACER\\Documents\\pakarbibackend\\qrcode"
 // InitQRCodeFolder membuat folder QR code jika belum ada.
 func InitQRCodeFolder() error {
 	if _, err := os.Stat(PathQRCode); os.IsNotExist(err) {
+		log.Printf("Creating QR code folder at: %s", PathQRCode)
 		err := os.Mkdir(PathQRCode, os.ModePerm)
 		if err != nil {
 			return err
 		}
+	} else {
+		log.Printf("QR code folder already exists at: %s", PathQRCode)
 	}
 	return nil
 }
