@@ -8,8 +8,10 @@ import (
 	"image"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 
+	"github.com/nfnt/resize"
 	"github.com/disintegration/imaging"
 	"github.com/skip2/go-qrcode"
 
@@ -22,6 +24,65 @@ import (
 )
 
 // <---Function Generate Code QR--->
+// func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (string, error) {
+// 	// Convert struct to JSON
+// 	dataJSON, err := json.Marshal(dataparkiran)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to marshal JSON: %v", err)
+// 	}
+
+// 	// Generate QR code
+// 	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to generate QR code: %v", err)
+// 	}
+
+// 	// Create an image from the QR code
+// 	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to decode QR code image: %v", err)
+// 	}
+
+// 	// Open the ULBI logo file
+// 	logoFile, err := os.Open("logo_ulbi.png") // Replace with your ULBI logo file path
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to open logo file: %v", err)
+// 	}
+// 	defer logoFile.Close()
+
+// 	// Decode the ULBI logo
+// 	logo, _, err := image.Decode(logoFile)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to decode logo image: %v", err)
+// 	}
+
+// 	// Resize the logo to fit within the QR code
+// 	resizedLogo := imaging.Resize(logo, 80, 0, imaging.Lanczos)
+
+// 	// Calculate position to overlay the logo on the QR code
+// 	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
+// 	y := (qrImage.Bounds().Dy() - resizedLogo.Bounds().Dy()) / 2
+
+// 	// Draw the logo onto the QR code
+// 	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
+
+// 	// Save the final QR code with logo
+// 	fileName := dataparkiran.Parkiranid + "_qrcode.png" // Using Parkiran ID in the file name
+// 	outFile, err := os.Create(fileName)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to create output file: %v", err)
+// 	}
+// 	defer outFile.Close()
+
+// 	// Encode the final image into the output file
+// 	err = imaging.Encode(outFile, result, imaging.PNG)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to encode image: %v", err)
+// 	}
+
+// 	return fileName, nil
+// }
+
 func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (string, error) {
 	// Convert struct to JSON
 	dataJSON, err := json.Marshal(dataparkiran)
@@ -41,21 +102,24 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 		return "", fmt.Errorf("failed to decode QR code image: %v", err)
 	}
 
-	// Open the ULBI logo file
-	logoFile, err := os.Open("logo_ulbi.png") // Replace with your ULBI logo file path
+	// Open the ULBI logo file from the "qrcode" folder
+	logoFile, err := os.Open("qrcode/logo_ulbi.png") // Replace with your ULBI logo file path
 	if err != nil {
-		return "", fmt.Errorf("failed to open logo file: %v", err)
+    return "", fmt.Errorf("failed to open logo file: %v", err)
 	}
 	defer logoFile.Close()
+
+	// Get the base name of the ULBI logo file
+	logoBaseName := path.Base(logoFile.Name())
 
 	// Decode the ULBI logo
 	logo, _, err := image.Decode(logoFile)
 	if err != nil {
-		return "", fmt.Errorf("failed to decode logo image: %v", err)
+    return "", fmt.Errorf("failed to decode logo image: %v", err)
 	}
 
 	// Resize the logo to fit within the QR code
-	resizedLogo := imaging.Resize(logo, 80, 0, imaging.Lanczos)
+	resizedLogo := resize.Resize(80, 0, logo, resize.Lanczos3)
 
 	// Calculate position to overlay the logo on the QR code
 	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
@@ -65,7 +129,7 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
 
 	// Save the final QR code with logo
-	fileName := dataparkiran.Parkiranid + "_qrcode.png" // Using Parkiran ID in the file name
+	fileName := "qrcode/" + dataparkiran.Parkiranid + "_" + logoBaseName + "qrcode.png" // Using Parkiran ID and logo base name in the file name
 	outFile, err := os.Create(fileName)
 	if err != nil {
 		return "", fmt.Errorf("failed to create output file: %v", err)
@@ -96,66 +160,6 @@ func InitQRCodeFolder() error {
 		log.Printf("QR code folder already exists at: %s", PathQRCode)
 	}
 	return nil
-}
-
-//Generate code qr save to local
-func GenerateQRCodeLogoSaveLocal(mconn *mongo.Database, dataparkiran Parkiran, localPath string) (string, error) {
-	// Convert struct to JSON
-	dataJSON, err := json.Marshal(dataparkiran)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal JSON: %v", err)
-	}
-
-	// Generate QR code
-	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
-	if err != nil {
-		return "", fmt.Errorf("failed to generate QR code: %v", err)
-	}
-
-	// Create an image from the QR code
-	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
-	if err != nil {
-		return "", fmt.Errorf("failed to decode QR code image: %v", err)
-	}
-
-	// Open the ULBI logo file
-	logoFile, err := os.Open("qrcode/logo_ulbi.png") // Replace with your ULBI logo file path
-	if err != nil {
-		return "", fmt.Errorf("failed to open logo file: %v", err)
-	}
-	defer logoFile.Close()
-
-	// Decode the ULBI logo
-	logo, _, err := image.Decode(logoFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to decode logo image: %v", err)
-	}
-
-	// Resize the logo to fit within the QR code
-	resizedLogo := imaging.Resize(logo, 80, 0, imaging.Lanczos)
-
-	// Calculate position to overlay the logo on the QR code
-	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
-	y := (qrImage.Bounds().Dy() - resizedLogo.Bounds().Dy()) / 2
-
-	// Draw the logo onto the QR code
-	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
-
-	// Save the final QR code with logo to local path
-	fileName := localPath + dataparkiran.Parkiranid + "_qrcode.png" // Using Parkiran ID in the file name
-	outFile, err := os.Create(fileName)
-	if err != nil {
-		return "", fmt.Errorf("failed to create output file: %v", err)
-	}
-	defer outFile.Close()
-
-	// Encode the final image into the output file
-	err = imaging.Encode(outFile, result, imaging.PNG)
-	if err != nil {
-		return "", fmt.Errorf("failed to encode image: %v", err)
-	}
-
-	return fileName, nil
 }
 
 // GenerateQRCode menghasilkan QR code dari data parkiran dan menyimpannya di path yang ditentukan.
@@ -314,8 +318,8 @@ func CreateUserAndAddToken(privateKeyEnv string, mongoconn *mongo.Database, coll
 	return nil
 }
 
-func CreateStatus(status string, message string, data interface{}, requestParkiran RequestParkiran) Status {
-	return Status{
+func CreateStatus(status string, message string, data interface{}, requestParkiran RequestParkiran) Status2 {
+	return Status2{
 		Status:         status,
 		Message:        message,
 		DataParkir:     data,

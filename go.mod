@@ -6,6 +6,7 @@ require (
 	aidanwoods.dev/go-paseto v1.5.1
 	github.com/aiteung/atdb v0.1.5
 	github.com/disintegration/imaging v1.6.2
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/whatsauth/watoken v0.1.6
 	go.mongodb.org/mongo-driver v1.13.1

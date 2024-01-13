@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
 
@@ -56,7 +57,10 @@ func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (inser
 // <---FUNCTION UNTUK MENYIMPAN GAMBAR CODE QR KE MONGODB --->
 // func SaveQRCodeToMongoDB(qrCodePath string, MONGOCONNSTRINGENV, dbName, collectionName string) error {
 // 	// Buat koneksi ke MongoDB
-// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbName)
+// 	mconn, err := SetConnection(MONGOCONNSTRINGENV, dbName)
+// 	if err != nil {
+// 		return err
+// 	}
 
 // 	// Baca file gambar kode QR
 // 	qrCodeFile, err := os.Open(qrCodePath)

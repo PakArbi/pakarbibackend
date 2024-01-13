@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"time"
+
 
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
@@ -25,6 +25,14 @@ func (v *EmailValidator) IsValid(email string) bool {
 	match, _ := regexp.MatchString(v.regexPattern, email)
 	return match
 }
+
+//senResponse
+func sendResponse(w http.ResponseWriter, response interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
 
 // <--- FUNCTION USER --->
 func Register(Mongoenv, dbname string, r *http.Request) string {
@@ -280,7 +288,8 @@ func LoginAdmin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname 
 // 	return GCFReturnStruct(response)
 // }
 
-func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran, collqrcodes string, r *http.Request) string {
+// FUNCTION INSERT PARKIRAN 1
+func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
@@ -301,11 +310,8 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
-					sendResponse(w, response)
-    				return
 				} else {
-
-					// Menyisipkan data parkiran ke MongoDB
+					// Insert data to MongoDB
 					insertParkiran(mconn, collparkiran, Parkiran{
 						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
@@ -317,29 +323,14 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 						Status:         dataparkiran.Status,
 					})
 
-					// Generate QR code with logo and get the file name
-					qrFileName, err := GenerateQRCodeLogoSaveLocal(mconn, dataparkiran)
+					// Generate QR code with logo
+					_, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
 					if err != nil {
-						response.Message = "Failed to generate QR code: " + err.Error()
-						sendResponse(w, response)
-						return
+						response.Message = "Error generating QR code: " + err.Error()
+					} else {
+						response.Status = true
+						response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
 					}
-
-					// Save QR code to MongoDB
-					err = SaveQRCodeToMongoDB(qrFileName, MONGOCONNSTRINGENV, dbname, collqrcodes)
-					if err != nil {
-						response.Message = "Failed to save QR code to MongoDB: " + err.Error()
-						sendResponse(w, response)
-						return
-					}
-
-					// Update parkiran data with QR code path
-					dataparkiran.QRCodePath = qrFileName
-					insertParkiran(mconn, collparkiran, dataparkiran)
-
-					// Set response status to true and success message
-					response.Status = true
-					response.Message = "Berhasil Insert Data Parkiran"
 				}
 			} else {
 				response.Message = "Anda tidak dapat Insert data karena bukan user"
@@ -349,8 +340,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	return GCFReturnStruct(response)
 }
 
-
-func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran, collqrcodes string, r *http.Request) string {
+func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
@@ -371,12 +361,9 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
-					sendResponse(w, response)
-    				return
 				} else {
-
-					// Menyisipkan data parkiran ke MongoDB
-					insertParkiran(mconn, collparkiran, Parkiran{
+					// Insert data to MongoDB
+					insertParkiran(mconn, collparkiran, Parkiran {
 						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
 						NPM:            dataparkiran.NPM,
@@ -387,29 +374,14 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 						Status:         dataparkiran.Status,
 					})
 
-					// Generate QR code with logo and get the file name
-					qrFileName, err := GenerateQRCodeLogoSaveLocal(mconn, dataparkiran)
+					// Generate QR code with logo
+					_, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
 					if err != nil {
-						response.Message = "Failed to generate QR code: " + err.Error()
-						sendResponse(w, response)
-						return
+						response.Message = "Error generating QR code: " + err.Error()
+					} else {
+						response.Status = true
+						response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
 					}
-
-					// Save QR code to MongoDB
-					err = SaveQRCodeToMongoDB(qrFileName, MONGOCONNSTRINGENV, dbname, collqrcodes)
-					if err != nil {
-						response.Message = "Failed to save QR code to MongoDB: " + err.Error()
-						sendResponse(w, response)
-						return
-					}
-
-					// Update parkiran data with QR code path
-					dataparkiran.QRCodePath = qrFileName
-					insertParkiran(mconn, collparkiran, dataparkiran)
-
-					// Set response status to true and success message
-					response.Status = true
-					response.Message = "Berhasil Insert Data Parkiran"
 				}
 			} else {
 				response.Message = "Anda tidak dapat Insert data karena bukan user"
@@ -418,6 +390,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	}
 	return GCFReturnStruct(response)
 }
+
 
 
 // <--- FUNCTION INSERT PARKIRAN 2 --->

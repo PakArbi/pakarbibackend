@@ -3,7 +3,9 @@ package pakarbibackend
 import (
 	"time"
 	"fmt"
+	"os"
 	"testing"
+	"path/filepath"
 
 
 	"github.com/aiteung/atdb"
@@ -171,15 +173,49 @@ func TestLoginn(t *testing.T) {
 
 
 //proses untuk generate code qr
+// func TestGenerateQRCodeWithLogo(t *testing.T) {
+//     // Initialize your MongoDB connection here
+//     mconn := SetConnection("MONGOSTRING", "PakArbiApp")
+
+//     // Initialize a sample Parkiran struct for testing
+//     dataparkiran := Parkiran{
+//         Parkiranid:     "D3/D412345", // Use the same value as in the expectation
+//         Nama:           "John Doe",
+//         NPM:            "12345",     // 
+//         Prodi:          "Computer Science",
+//         NamaKendaraan:  "Car",
+//         NomorKendaraan: "AB 1234 CD",
+//         JenisKendaraan: "Sedan",
+//         Status: Status{
+//             Message:    "sudah masuk Parkir",
+//             WaktuMasuk: time.Now().Format(time.RFC3339),
+//         },
+//     }
+
+//     fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
+//     if err != nil {
+//         t.Errorf("Error generating QR code: %v", err)
+//         return
+//     }
+
+//     if fileName != "qrcode/D3/D412345_qrcode.png" {
+//         t.Errorf("Expected file name 'qrcode/D3/D412345_qrcode.png', got '%s'", fileName)
+//         return
+//     }
+
+//     t.Log("Berhasil generate code qr")
+// }
+
+
 func TestGenerateQRCodeWithLogo(t *testing.T) {
-    // Initialize your MongoDB connection here
+    // Set up your MongoDB connection
     mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 
-    // Initialize a sample Parkiran struct for testing
+    // Set up a sample Parkiran struct for testing
     dataparkiran := Parkiran{
-        Parkiranid:     "D31214000", // parkiranid telah di generate jadi string
+        Parkiranid:     "D31214000",
         Nama:           "John Doe",
-        NPM:            "12345",     // 
+        NPM:            "12345",
         Prodi:          "Computer Science",
         NamaKendaraan:  "Car",
         NomorKendaraan: "AB 1234 CD",
@@ -190,16 +226,25 @@ func TestGenerateQRCodeWithLogo(t *testing.T) {
         },
     }
 
+    // Generate QR code with logo
     fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
     if err != nil {
         t.Errorf("Error generating QR code: %v", err)
         return
     }
 
-    if fileName != "D31214000_qrcode.png" {
-        t.Errorf("Expected file name 'D3/D412345_qrcode.png', got '%s'", fileName)
+    // Check if the generated file exists
+    if _, err := os.Stat(fileName); os.IsNotExist(err) {
+        t.Errorf("Expected file '%s' not found", fileName)
         return
     }
 
-    t.Log("Berhasil generate code qr")
+    // Check if the file name follows the expected pattern
+    expectedFileName := filepath.Base(dataparkiran.Parkiranid + "_logo_ulbi_qrcode.png")
+    if fileName != expectedFileName {
+        t.Errorf("Expected file name '%s', got '%s'", expectedFileName, fileName)
+        return
+    }
+
+    t.Log("Successfully generated QR code with logo")
 }

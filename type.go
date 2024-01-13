@@ -44,19 +44,32 @@ type Parkiran struct {
 	Status         Status             `json:"status" bson:"status"`
 }
 
+type Parkiran2 struct {
+	ID             primitive.ObjectID `bson:"_id,omitempty" `
+	Parkiranid     string             `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
+	Nama           string             `json:"nama,omitempty" bson:"nama,omitempty"`
+	NPM            string             `json:"npm,omitempty" bson:"npm,omitempty"`
+	Prodi          string             `json:"prodi,omitempty" bson:"prodi,omitempty"`
+	NamaKendaraan  string             `json:"namakendaraan,omitempty" bson:"namakendaraan,omitempty"`
+	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
+	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
+	Status         Status             `json:"status" bson:"status"`
+	QRCodePath     string 			  `json:"qrcodepath" bson:"qrcodepath"`
+}
+
 type Time struct {
 	Message     string `json:"message,omitempty" bson:"message,omitempty"`
 	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
 	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
 }
 
-// type Status struct {
-// 	Message     string `json:"message,omitempty" bson:"message,omitempty"`
-// 	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
-// 	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
-// }
-
 type Status struct {
+	Message     string `json:"message,omitempty" bson:"message,omitempty"`
+	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
+	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
+}
+
+type Status2 struct {
 	Status      string 					`json:"status,omitempty" bson:"status,omitempty"`
 	Message     string 					`json:"message,omitempty" bson:"message,omitempty"`
 	DataParkir  interface{} 			`json:"dataparkir,omitempty" bson:"dataparkir,omitempty"`
