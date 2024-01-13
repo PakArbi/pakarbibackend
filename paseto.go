@@ -430,6 +430,81 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 	return GCFReturnStruct(response)
 }
 
+func GCFInsertParkiranNPM3(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+	// Inisialisasi folder QR code
+	err := InitQRCodeFolder()
+	if err != nil {
+		return GCFReturnStruct(Credential{Status: false, Message: "Failed to initialize QR code folder"})
+	}
+
+	// Set koneksi MongoDB
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+
+	// Inisialisasi respons
+	var response Credential
+	response.Status = false
+
+	// Mendapatkan data token dari header
+	gettoken := r.Header.Get("Login")
+
+	// Memeriksa apakah token ada
+	if gettoken == "" {
+		response.Message = "Header Login Not Exist"
+	} else {
+		// Proses permintaan dengan token "Login"
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+		var userdata User
+		userdata.NPM = checktoken
+
+		// Memeriksa apakah token valid
+		if checktoken == "" {
+			response.Message = "Kamu kayaknya belum punya akun"
+		} else {
+			user2 := FindUserNPM(mconn, colluser, userdata)
+
+			// Memeriksa apakah pengguna memiliki peran "user"
+			if user2.Role == "user" {
+				var dataparkiran Parkiran
+
+				// Membaca dan mendecode data parkiran dari body request
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+				if err != nil {
+					response.Message = "Error parsing application/json: " + err.Error()
+				} else {
+					// Menyisipkan data parkiran ke MongoDB
+					insertParkiran(mconn, collparkiran, Parkiran{
+						Parkiranid:     dataparkiran.Parkiranid,
+						Nama:           dataparkiran.Nama,
+						NPM:            dataparkiran.NPM,
+						Prodi:          dataparkiran.Prodi,
+						NamaKendaraan:  dataparkiran.NamaKendaraan,
+						NomorKendaraan: dataparkiran.NomorKendaraan,
+						JenisKendaraan: dataparkiran.JenisKendaraan,
+						Status:         dataparkiran.Status,
+					})
+					// Generate QR code tanpa logo
+					qrOutputPath := filepath.Join("C:\\Users\\ACER\\Documents\\pakarbibackend\\qrcode", dataparkiran.Parkiranid+"_qrcode.png")
+					err := GenerateQRCode(dataparkiran, qrOutputPath)
+					if err != nil {
+						response.Message = "Failed to generate QR code: " + err.Error()
+						return GCFReturnStruct(response)
+					}
+
+					// Setel respons berhasil
+					response.Status = true
+					response.Message = "Berhasil Insert Data Parkiran"
+					response.Data = qrOutputPath
+				}
+			} else {
+				response.Message = "Anda tidak dapat Insert data karena bukan user"
+			}
+		}
+	}
+
+	// Mengembalikan respons dalam bentuk string JSON
+	return GCFReturnStruct(response)
+}
+
 func GCFInsertParkiranNPM4(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	// Inisialisasi folder QR code
 	err := InitQRCodeFolder()
@@ -805,40 +880,40 @@ func GetOneDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Req
 	return ReturnStringStruct(req)
 }
 
-func GCFGetAllParkiranID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// func GCFGetAllParkiranID(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
-	var dataparkiran Parkiran
-	err := json.NewDecoder(r.Body).Decode(&dataparkiran)
-	if err != nil {
-		return err.Error()
-	}
+// 	var dataparkiran Parkiran
+// 	err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
 
-	parkiran := GetAllParkiranID(mconn, collectionname, dataparkiran)
-	if parkiran != (Parkiran{}) {
-		return GCFReturnStruct(CreateResponse(true, "Success: Get ID Parkiran", dataparkiran))
-	} else {
-		return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Parkiran", dataparkiran))
-	}
-}
+// 	parkiran := GetAllParkiranID(mconn, collectionname, dataparkiran)
+// 	if parkiran != (Parkiran{}) {
+// 		return GCFReturnStruct(CreateResponse(true, "Success: Get ID Parkiran", dataparkiran))
+// 	} else {
+// 		return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Parkiran", dataparkiran))
+// 	}
+// }
 
-func GCFGetParkiranById(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+// func GCFGetParkiranById(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 
-	var dataparkiran Parkiran
-	err := json.NewDecoder(r.Body).Decode(&dataparkiran)
-	if err != nil {
-		return GCFReturnStruct(CreateResponse(false, "Error parsing JSON: "+err.Error(), nil))
-	}
+// 	var dataparkiran Parkiran
+// 	err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+// 	if err != nil {
+// 		return GCFReturnStruct(CreateResponse(false, "Error parsing JSON: "+err.Error(), nil))
+// 	}
 
-	parkiran, err := GetParkiranById(mconn, collectionname, dataparkiran.Parkiranid)
-	if err != nil {
-		return GCFReturnStruct(CreateResponse(false, "Failed to Get Parkiran by ID: "+err.Error(), nil))
-	}
+// 	parkiran, err := GetParkiranById(mconn, collectionname, dataparkiran.Parkiranid)
+// 	if err != nil {
+// 		return GCFReturnStruct(CreateResponse(false, "Failed to Get Parkiran by ID: "+err.Error(), nil))
+// 	}
 
-	if parkiran != (Parkiran{}) {
-		return GCFReturnStruct(CreateResponse(true, "Success: Get Parkiran by ID", parkiran))
-	} else {
-		return GCFReturnStruct(CreateResponse(false, "No parkiran found with ID: "+dataparkiran.Parkiranid, nil))
-	}
-}
+// 	if parkiran != (Parkiran{}) {
+// 		return GCFReturnStruct(CreateResponse(true, "Success: Get Parkiran by ID", parkiran))
+// 	} else {
+// 		return GCFReturnStruct(CreateResponse(false, "No parkiran found with ID: "+dataparkiran.Parkiranid, nil))
+// 	}
+// }
