@@ -44,10 +44,23 @@ type Parkiran struct {
 	Status         Status             `json:"status" bson:"status"`
 }
 
-type Status struct {
+type Time struct {
 	Message     string `json:"message,omitempty" bson:"message,omitempty"`
 	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
 	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
+}
+
+// type Status struct {
+// 	Message     string `json:"message,omitempty" bson:"message,omitempty"`
+// 	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
+// 	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
+// }
+
+type Status struct {
+	Status      string 					`json:"status,omitempty" bson:"status,omitempty"`
+	Message     string 					`json:"message,omitempty" bson:"message,omitempty"`
+	DataParkir  interface{} 			`json:"dataparkir,omitempty" bson:"dataparkir,omitempty"`
+	RequestParkiran RequestParkiran	 	`json:"requestparkiran,omitempty" bson:"requestparkiran,omitempty"`
 }
 
 type Credential struct {
