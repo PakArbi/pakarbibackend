@@ -217,6 +217,20 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, collparkiran string, datapark
 	return fileName, nil
 }
 
+func GetLogoPath() (string, error) {
+	// Get the directory of the currently executing file
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("failed to get current file path")
+	}
+	currentDir := filepath.Dir(filename)
+
+	// Construct the path to the logo file
+	logoFilePath := filepath.Join(currentDir, "qrcode", "logo_ulbi.png")
+
+	return logoFilePath, nil
+}
+
 func GenerateQRCodeWithLogoULBI(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
 	// Convert struct to JSON
 	dataJSON, err := json.Marshal(dataparkiran)
@@ -243,8 +257,11 @@ func GenerateQRCodeWithLogoULBI(mconn *mongo.Database, collparkiran string, data
 	}
 	currentDir := filepath.Dir(filename)
 
-	// Construct the path to the logo file
-	logoFilePath := filepath.Join(currentDir, "qrcode", "logo_ulbi.png")
+	// Get the path to the logo file
+	logoFilePath, err := GetLogoPath()
+	if err != nil {
+		return "", fmt.Errorf("failed to get logo file path: %v", err)
+	}
 
 	// Open the ULBI logo file
 	logoFile, err := os.Open(logoFilePath)
