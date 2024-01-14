@@ -8,7 +8,6 @@ import (
 	"image"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/disintegration/imaging"
@@ -118,7 +117,7 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 	defer logoFile.Close()
 
 	// Get the base name of the ULBI logo file
-	logoBaseName := path.Base(logoFile.Name())
+	// logoBaseName := path.Base(logoFile.Name())
 
 	// Decode the ULBI logo
 	logo, _, err := image.Decode(logoFile)
@@ -137,7 +136,8 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
 
 	// Save the final QR code with logo
-	fileName := "qrcode/" + dataparkiran.Parkiranid + "_" + logoBaseName + "qrcode.png" // Using Parkiran ID and logo base name in the file name
+	// Save the final QR code with logo
+	fileName := filepath.Join("qrcode", fmt.Sprintf("%s_logo_ulbi_qrcode.png", dataparkiran.Parkiranid))
 	outFile, err := os.Create(fileName)
 	if err != nil {
 		return "", fmt.Errorf("failed to create output file: %v", err)

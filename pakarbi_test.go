@@ -1,12 +1,10 @@
 package pakarbibackend
 
 import (
-	"time"
 	"fmt"
 	"os"
-	"testing"
 	"path/filepath"
-
+	"testing"
 
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
@@ -171,7 +169,6 @@ func TestLoginn(t *testing.T) {
 	fmt.Println(userdata)
 }
 
-
 //proses untuk generate code qr
 // func TestGenerateQRCodeWithLogo(t *testing.T) {
 //     // Initialize your MongoDB connection here
@@ -181,7 +178,7 @@ func TestLoginn(t *testing.T) {
 //     dataparkiran := Parkiran{
 //         Parkiranid:     "D3/D412345", // Use the same value as in the expectation
 //         Nama:           "John Doe",
-//         NPM:            "12345",     // 
+//         NPM:            "12345",     //
 //         Prodi:          "Computer Science",
 //         NamaKendaraan:  "Car",
 //         NomorKendaraan: "AB 1234 CD",
@@ -206,45 +203,88 @@ func TestLoginn(t *testing.T) {
 //     t.Log("Berhasil generate code qr")
 // }
 
+// func TestGenerateQRCodeWithLogo(t *testing.T) {
+//     // Set up your MongoDB connection
+//     mconn := SetConnection("MONGOSTRING", "PakArbiApp")
+
+//     // Set up a sample Parkiran struct for testing
+//     dataparkiran := Parkiran{
+//         Parkiranid:     "D31214000",
+//         Nama:           "John Doe",
+//         NPM:            "12345",
+//         Prodi:          "Computer Science",
+//         NamaKendaraan:  "Car",
+//         NomorKendaraan: "AB 1234 CD",
+//         JenisKendaraan: "Sedan",
+//         Status: Status{
+//             Message:    "sudah masuk Parkir",
+//             WaktuMasuk: time.Now().Format(time.RFC3339),
+//         },
+//     }
+
+//     // Generate QR code with logo
+//     fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
+//     if err != nil {
+//         t.Errorf("Error generating QR code: %v", err)
+//         return
+//     }
+
+//     // Check if the generated file exists
+//     if _, err := os.Stat(fileName); os.IsNotExist(err) {
+//         t.Errorf("Expected file '%s' not found", fileName)
+//         return
+//     }
+
+//     // Check if the file name follows the expected pattern
+//     expectedFileName := filepath.Base(dataparkiran.Parkiranid + "_logo_ulbi_qrcode.png")
+//     if fileName != expectedFileName {
+//         t.Errorf("Expected file name '%s', got '%s'", expectedFileName, fileName)
+//         return
+//     }
+
+//     t.Log("Successfully generated QR code with logo")
+// }
 
 func TestGenerateQRCodeWithLogo(t *testing.T) {
-    // Set up your MongoDB connection
-    mconn := SetConnection("MONGOSTRING", "PakArbiApp")
+	// Set up your MongoDB connection
+	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 
-    // Set up a sample Parkiran struct for testing
-    dataparkiran := Parkiran{
-        Parkiranid:     "D31214000",
-        Nama:           "John Doe",
-        NPM:            "12345",
-        Prodi:          "Computer Science",
-        NamaKendaraan:  "Car",
-        NomorKendaraan: "AB 1234 CD",
-        JenisKendaraan: "Sedan",
-        Status: Status{
-            Message:    "sudah masuk Parkir",
-            WaktuMasuk: time.Now().Format(time.RFC3339),
-        },
-    }
+	// Set up a sample Parkiran struct for testing
+	dataparkiran := Parkiran{
+		Parkiranid:     "D31214042",
+		Nama:           "John Doe",
+		NPM:            "12345",
+		Prodi:          "Computer Science",
+		NamaKendaraan:  "Car",
+		NomorKendaraan: "AB 1234 CD",
+		JenisKendaraan: "Sedan",
+		Status: Status{
+			Message:     "sudah masuk Parkir",
+			WaktuMasuk:  "some_waktu_masuk",
+			WaktuKeluar: "some_waktu_keluar",
+			// WaktuMasuk: time.Now().Format(time.RFC3339),
+		},
+	}
 
-    // Generate QR code with logo
-    fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
-    if err != nil {
-        t.Errorf("Error generating QR code: %v", err)
-        return
-    }
+	// Generate QR code with logo
+	fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
+	if err != nil {
+		t.Errorf("Error generating QR code with logo: %v", err)
+		return
+	}
 
-    // Check if the generated file exists
-    if _, err := os.Stat(fileName); os.IsNotExist(err) {
-        t.Errorf("Expected file '%s' not found", fileName)
-        return
-    }
+	// Check if the generated file exists
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
+		t.Errorf("Expected file '%s' not found", fileName)
+		return
+	}
 
-    // Check if the file name follows the expected pattern
-    expectedFileName := filepath.Base(dataparkiran.Parkiranid + "_logo_ulbi_qrcode.png")
-    if fileName != expectedFileName {
-        t.Errorf("Expected file name '%s', got '%s'", expectedFileName, fileName)
-        return
-    }
+	// Check if the file name follows the expected pattern
+	expectedFileName := filepath.Join("qrcode", dataparkiran.Parkiranid+"_logo_ulbi_qrcode.png")
+	if fileName != expectedFileName {
+		t.Errorf("Expected file name '%s', got '%s'", expectedFileName, fileName)
+		return
+	}
 
-    t.Log("Successfully generated QR code with logo")
+	t.Log("Successfully generated QR code with logo")
 }
