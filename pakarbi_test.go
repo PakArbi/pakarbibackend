@@ -251,8 +251,8 @@ func TestGenerateQRCodeWithLogo(t *testing.T) {
 
 	// Set up a sample Parkiran struct for testing
 	dataparkiran := Parkiran{
-		Parkiranid:     "D31214042",
-		Nama:           "John Doe",
+		Parkiranid:     "D41214020",
+		Nama:           "Farhan Rizki Maulana",
 		NPM:            "12345",
 		Prodi:          "Computer Science",
 		NamaKendaraan:  "Car",
@@ -267,7 +267,7 @@ func TestGenerateQRCodeWithLogo(t *testing.T) {
 	}
 
 	// Generate QR code with logo
-	fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
+	fileName, err := GenerateQRCodeWithLogo(mconn, "parkiran", dataparkiran)
 	if err != nil {
 		t.Errorf("Error generating QR code with logo: %v", err)
 		return
@@ -288,3 +288,4 @@ func TestGenerateQRCodeWithLogo(t *testing.T) {
 
 	t.Log("Successfully generated QR code with logo")
 }
+
