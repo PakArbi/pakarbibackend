@@ -11,8 +11,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/nfnt/resize"
 	"github.com/disintegration/imaging"
+	"github.com/nfnt/resize"
 	"github.com/skip2/go-qrcode"
 
 	"github.com/aiteung/atdb"
@@ -102,10 +102,18 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 		return "", fmt.Errorf("failed to decode QR code image: %v", err)
 	}
 
+	// // Open the ULBI logo file from the "qrcode" folder
+	// logoFile, err := os.Open("qrcode/logo_ulbi.png") // Replace with your ULBI logo file path
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to open logo file: %v", err)
+	// }
+	// defer logoFile.Close()
+
 	// Open the ULBI logo file from the "qrcode" folder
-	logoFile, err := os.Open("qrcode/logo_ulbi.png") // Replace with your ULBI logo file path
+	logoFilePath := filepath.Join("qrcode", "logo_ulbi.png")
+	logoFile, err := os.Open(logoFilePath)
 	if err != nil {
-    return "", fmt.Errorf("failed to open logo file: %v", err)
+		return "", fmt.Errorf("failed to open logo file: %v", err)
 	}
 	defer logoFile.Close()
 
@@ -115,7 +123,7 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, dataparkiran Parkiran) (strin
 	// Decode the ULBI logo
 	logo, _, err := image.Decode(logoFile)
 	if err != nil {
-    return "", fmt.Errorf("failed to decode logo image: %v", err)
+		return "", fmt.Errorf("failed to decode logo image: %v", err)
 	}
 
 	// Resize the logo to fit within the QR code
@@ -320,9 +328,9 @@ func CreateUserAndAddToken(privateKeyEnv string, mongoconn *mongo.Database, coll
 
 func CreateStatus(status string, message string, data interface{}, requestParkiran RequestParkiran) Status2 {
 	return Status2{
-		Status:         status,
-		Message:        message,
-		DataParkir:     data,
+		Status:          status,
+		Message:         message,
+		DataParkir:      data,
 		RequestParkiran: requestParkiran,
 	}
 }
