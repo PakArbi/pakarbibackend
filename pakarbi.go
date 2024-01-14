@@ -258,15 +258,12 @@ func GenerateQRCodeWithLogoULBI(mconn *mongo.Database, collparkiran string, data
 	currentDir := filepath.Dir(filename)
 
 	// Get the path to the logo file
-	logoFilePath, err := GetLogoPath()
-	if err != nil {
-		return "", fmt.Errorf("failed to get logo file path: %v", err)
-	}
+	logoFilePath := filepath.Join("qrcode", "logo_ulbi.png")
 
 	// Open the ULBI logo file
 	logoFile, err := os.Open(logoFilePath)
 	if err != nil {
-		return "", fmt.Errorf("failed to open logo file: %v", err)
+		return "", fmt.Errorf("gagal membuka file logo: %v", err)
 	}
 	defer logoFile.Close()
 
@@ -305,7 +302,6 @@ func GenerateQRCodeWithLogoULBI(mconn *mongo.Database, collparkiran string, data
 
 	return fileName, nil
 }
-
 
 // PathQRCode menyimpan path untuk folder QR code.
 const PathQRCode = "C:\\Users\\ACER\\Documents\\pakarbibackend\\qrcode"
