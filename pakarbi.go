@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/disintegration/imaging"
 	"github.com/nfnt/resize"
@@ -236,7 +237,13 @@ func GenerateQRCodeWithLogoULBI(mconn *mongo.Database, collparkiran string, data
 	}
 
 	// Open the ULBI logo file from the project root directory
-	logoFilePath := "logo_ulbi.png"
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("failed to get current file path")
+	}
+	projectRoot := filepath.Dir(filepath.Dir(filename))
+	logoFilePath := filepath.Join(projectRoot, "logo_ulbi.png")
+
 	logoFile, err := os.Open(logoFilePath)
 	if err != nil {
 		return "", fmt.Errorf("failed to open logo file: %v", err)
@@ -278,7 +285,6 @@ func GenerateQRCodeWithLogoULBI(mconn *mongo.Database, collparkiran string, data
 
 	return fileName, nil
 }
-
 
 // PathQRCode menyimpan path untuk folder QR code.
 const PathQRCode = "C:\\Users\\ACER\\Documents\\pakarbibackend\\qrcode"
