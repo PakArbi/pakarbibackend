@@ -324,7 +324,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 					})
 
 					// Generate QR code with logo
-					_, err := GenerateQRCodeWithLogo(mconn, "parkiran", dataparkiran)
+					_, err := GenerateQRCodeWithLogoULBI(mconn, "parkiran", dataparkiran)
 					if err != nil {
 						response.Message = "Error generating QR code: " + err.Error()
 					} else {

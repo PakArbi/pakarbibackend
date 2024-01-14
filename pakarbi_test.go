@@ -251,9 +251,9 @@ func TestGenerateQRCodeWithLogo(t *testing.T) {
 
 	// Set up a sample Parkiran struct for testing
 	dataparkiran := Parkiran{
-		Parkiranid:     "D41214020",
-		Nama:           "Farhan Rizki Maulana",
-		NPM:            "12345",
+		Parkiranid:     "D41214000",
+		Nama:           "ULBI",
+		NPM:            "1214000",
 		Prodi:          "Computer Science",
 		NamaKendaraan:  "Car",
 		NomorKendaraan: "AB 1234 CD",

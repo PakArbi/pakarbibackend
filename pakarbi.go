@@ -216,6 +216,69 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, collparkiran string, datapark
 	return fileName, nil
 }
 
+func GenerateQRCodeWithLogoULBI(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
+	// Convert struct to JSON
+	dataJSON, err := json.Marshal(dataparkiran)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal JSON: %v", err)
+	}
+
+	// Generate QR code
+	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate QR code: %v", err)
+	}
+
+	// Create an image from the QR code
+	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
+	if err != nil {
+		return "", fmt.Errorf("failed to decode QR code image: %v", err)
+	}
+
+	// Open the ULBI logo file from the project root directory
+	logoFilePath := "logo_ulbi.png"
+	logoFile, err := os.Open(logoFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open logo file: %v", err)
+	}
+	defer logoFile.Close()
+
+	// Decode the ULBI logo
+	logo, _, err := image.Decode(logoFile)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode logo image: %v", err)
+	}
+
+	// Resize the logo to fit within the QR code
+	resizedLogo := resize.Resize(80, 0, logo, resize.Lanczos3)
+
+	// Calculate position to overlay the logo on the QR code
+	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
+	y := (qrImage.Bounds().Dy() - resizedLogo.Bounds().Dy()) / 2
+
+	// Draw the logo onto the QR code
+	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
+
+	// Save the final QR code with logo
+	fileName := filepath.Join("qrcode", fmt.Sprintf("%s_logo_ulbi_qrcode.png", dataparkiran.Parkiranid))
+	outFile, err := os.Create(fileName)
+	if err != nil {
+		return "", fmt.Errorf("failed to create output file: %v", err)
+	}
+	defer outFile.Close()
+
+	// Encode the final image into the output file
+	err = imaging.Encode(outFile, result, imaging.PNG)
+	if err != nil {
+		return "", fmt.Errorf("failed to encode image: %v", err)
+	}
+
+	// Insert data into MongoDB collection
+	insertParkiran(mconn, collparkiran, dataparkiran)
+
+	return fileName, nil
+}
+
 
 // PathQRCode menyimpan path untuk folder QR code.
 const PathQRCode = "C:\\Users\\ACER\\Documents\\pakarbibackend\\qrcode"
