@@ -42,6 +42,7 @@ type Parkiran struct {
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
 	Status         Status             `json:"status" bson:"status"`
+	QRCodeImage    []byte             `json:"qrcodeimage"`
 }
 
 type Parkiran2 struct {
@@ -54,7 +55,12 @@ type Parkiran2 struct {
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
 	Status         Status             `json:"status" bson:"status"`
-	QRCodePath     string 			  `json:"qrcodepath" bson:"qrcodepath"`
+	QRCodePath     string             `json:"qrcodepath" bson:"qrcodepath"`
+}
+
+type QRData struct {
+	ParkiranID string `bson:"parkiranid"`
+	Image      string `bson:"image"`
 }
 
 type Time struct {
@@ -70,10 +76,10 @@ type Status struct {
 }
 
 type Status2 struct {
-	Status      string 					`json:"status,omitempty" bson:"status,omitempty"`
-	Message     string 					`json:"message,omitempty" bson:"message,omitempty"`
-	DataParkir  interface{} 			`json:"dataparkir,omitempty" bson:"dataparkir,omitempty"`
-	RequestParkiran RequestParkiran	 	`json:"requestparkiran,omitempty" bson:"requestparkiran,omitempty"`
+	Status          string          `json:"status,omitempty" bson:"status,omitempty"`
+	Message         string          `json:"message,omitempty" bson:"message,omitempty"`
+	DataParkir      interface{}     `json:"dataparkir,omitempty" bson:"dataparkir,omitempty"`
+	RequestParkiran RequestParkiran `json:"requestparkiran,omitempty" bson:"requestparkiran,omitempty"`
 }
 
 type Credential struct {
