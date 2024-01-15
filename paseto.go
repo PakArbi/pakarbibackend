@@ -309,7 +309,17 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
 					// Insert data to MongoDB
-					insertParkiran(mconn, collparkiran, dataparkiran)
+					insertParkiran(mconn, collparkiran, Parkiran{
+						Parkiranid:     dataparkiran.Parkiranid,
+						Nama:           dataparkiran.Nama,
+						NPM:            dataparkiran.NPM,
+						Prodi:          dataparkiran.Prodi,
+						NamaKendaraan:  dataparkiran.NamaKendaraan,
+						NomorKendaraan: dataparkiran.NomorKendaraan,
+						JenisKendaraan: dataparkiran.JenisKendaraan,
+						Status:         dataparkiran.Status,
+					})
+
 
 					// Generate QR code with logo and base64 encoding
 					_, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
@@ -340,13 +350,13 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	} else {
 		// Process the request with the "Login" token
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.Email = checktoken
+		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
 		} else {
 			user2 := FindUserEmail(mconn, colluser, userdata)
 			if user2.Role == "user" {
-				var dataparkiran Parkiran
+				var dataparkiran Parkiran // Change to Parkiran type
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
@@ -363,8 +373,9 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 						Status:         dataparkiran.Status,
 					})
 
-					// Generate QR code with logo
-					_, err := GenerateQRCodeWithLogo(mconn, "parkiran", dataparkiran)
+
+					// Generate QR code with logo and base64 encoding
+					_, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
 					if err != nil {
 						response.Message = "Error generating QR code: " + err.Error()
 					} else {
