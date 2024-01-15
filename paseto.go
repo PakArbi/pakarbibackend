@@ -320,7 +320,6 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 						Status:         dataparkiran.Status,
 					})
 
-
 					// Generate QR code with logo and base64 encoding
 					_, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
 					if err != nil {
@@ -337,7 +336,6 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	}
 	return GCFReturnStruct(response)
 }
-
 
 func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
@@ -373,7 +371,6 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 						Status:         dataparkiran.Status,
 					})
 
-
 					// Generate QR code with logo and base64 encoding
 					_, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
 					if err != nil {
@@ -390,6 +387,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	}
 	return GCFReturnStruct(response)
 }
+
 
 // GCF Update Data
 func GCFUpdateParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
