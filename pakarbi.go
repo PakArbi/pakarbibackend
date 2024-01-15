@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"encoding/base64"
+	"io/ioutil"
 	"fmt"
+	"strings"
 	"image"
 	"os"
 	"path/filepath"
@@ -214,6 +217,120 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, collparkiran string, datapark
 
 	return fileName, nil
 }
+
+//functione
+func ImageToBase64(imagePath string) (string, error) {
+	file, err := os.Open(imagePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open image file: %v", err)
+	}
+	defer file.Close()
+
+	// Read the file content into a byte slice
+	fileContent, err := ioutil.ReadAll(file)
+	if err != nil {
+		return "", fmt.Errorf("failed to read image file: %v", err)
+	}
+
+	// Encode the byte slice to base64
+	base64Image := base64.StdEncoding.EncodeToString(fileContent)
+
+	return base64Image, nil
+}
+
+// InsertQRCodeDataToMongoDB inserts QR code data into MongoDB
+func InsertQRCodeDataToMongoDB(mconn *mongo.Database, collectionName, parkiranID string, qrCodeData []byte) error {
+    // Your implementation here to insert qrCodeData into MongoDB
+    // You can use the provided MongoDB connection (mconn) and collectionName to perform the insertion
+
+    // For example:
+    collection := mconn.Collection(collectionName)
+
+    _, err := collection.InsertOne(context.TODO(), bson.M{
+        "parkiranID": parkiranID,
+        "qrCodeData": qrCodeData,
+    })
+
+    return err
+}
+
+
+
+// GenerateQRCodeLogoBase64 generates QR code with logo and inserts data into MongoDB
+func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
+	// Convert struct to JSON
+	dataJSON, err := json.Marshal(dataparkiran)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal JSON: %v", err)
+	}
+
+	// Generate QR code
+	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate QR code: %v", err)
+	}
+
+	// Create an image from the QR code
+	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
+	if err != nil {
+		return "", fmt.Errorf("failed to decode QR code image: %v", err)
+	}
+
+	// Open the ULBI logo file from the "qrcode" folder
+	logoFilePath := filepath.Join("qrcode", "logo_ulbi.png")
+	logoBase64, err := ImageToBase64(logoFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert logo to base64: %v", err)
+	}
+
+	// Insert QR code data into MongoDB
+	err = InsertQRCodeDataToMongoDB(mconn, "qrcodes", dataparkiran.Parkiranid, qrCode)
+	if err != nil {
+		return "", fmt.Errorf("failed to insert QR code data to MongoDB: %v", err)
+	}
+
+	// Decode the ULBI logo
+	logo, _, err := image.Decode(base64.NewDecoder(base64.StdEncoding, strings.NewReader(logoBase64)))
+	if err != nil {
+		return "", fmt.Errorf("failed to decode logo image: %v", err)
+	}
+
+	// Resize the logo to fit within the QR code
+	resizedLogo := resize.Resize(80, 0, logo, resize.Lanczos3)
+
+	// Calculate position to overlay the logo on the QR code
+	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
+	y := (qrImage.Bounds().Dy() - resizedLogo.Bounds().Dy()) / 2
+
+	// Draw the logo onto the QR code
+	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
+
+	// Save the final QR code with logo
+	fileName := filepath.Join("qrcode", fmt.Sprintf("%s_logo_ulbi_qrcode.png", dataparkiran.Parkiranid))
+	outFile, err := os.Create(fileName)
+	if err != nil {
+		return "", fmt.Errorf("failed to create output file: %v", err)
+	}
+	defer outFile.Close()
+
+	// Encode the final image into base64
+	var base64String string
+	base64Writer := &bytes.Buffer{} // Use a buffer instead of base64.NewEncoder
+	err = imaging.Encode(base64Writer, result, imaging.PNG)
+	if err != nil {
+		return "", fmt.Errorf("failed to encode image: %v", err)
+	}
+
+	// Get the base64 representation as a string
+	base64String = strings.TrimSpace(base64Writer.String())
+
+	// Insert data into MongoDB collection along with base64 image data
+	dataparkiran.Base64Image = base64String
+	insertParkiran(mconn, collparkiran, dataparkiran) // Use insertParkiran2 for Parkiran2 type
+
+	return fileName, nil
+}
+
 
 // <--- FUNCTION CRUD --->
 func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {

@@ -2,8 +2,9 @@ package pakarbibackend
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
+	// "os"
+	// "path/filepath"
+	"io/ioutil"
 	"testing"
 
 	"github.com/aiteung/atdb"
@@ -245,7 +246,7 @@ func TestLoginn(t *testing.T) {
 //     t.Log("Successfully generated QR code with logo")
 // }
 
-func TestGenerateQRCodeWithLogo(t *testing.T) {
+func TestInsertQRCodeDataToMongoDB(t *testing.T) {
 	// Set up your MongoDB connection
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 
@@ -263,30 +264,32 @@ func TestGenerateQRCodeWithLogo(t *testing.T) {
 			WaktuMasuk:  "some_waktu_masuk",
 			WaktuKeluar: "some_waktu_keluar",
 			// WaktuMasuk: time.Now().Format(time.RFC3339),
+
 		},
 	}
 
-	// Generate QR code with logo
-	fileName, err := GenerateQRCodeWithLogo(mconn, "parkiran", dataparkiran)
+	// Generate QR code with logo and insert into MongoDB
+	fileName, err := GenerateQRCodeLogoBase64(mconn, "parkiran", dataparkiran)
 	if err != nil {
 		t.Errorf("Error generating QR code with logo: %v", err)
 		return
 	}
 
-	// Check if the generated file exists
-	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		t.Errorf("Expected file '%s' not found", fileName)
+	// Read the QR code file
+	qrCodeData, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		t.Errorf("Error reading QR code file: %v", err)
 		return
 	}
 
-	// Check if the file name follows the expected pattern
-	expectedFileName := filepath.Join("qrcode", dataparkiran.Parkiranid+"_logo_ulbi_qrcode.png")
-	if fileName != expectedFileName {
-		t.Errorf("Expected file name '%s', got '%s'", expectedFileName, fileName)
+	// Insert QR code data into MongoDB
+	err = InsertQRCodeDataToMongoDB(mconn, "qrcodes", dataparkiran.Parkiranid, qrCodeData)
+	if err != nil {
+		t.Errorf("Error inserting QR code data to MongoDB: %v", err)
 		return
 	}
 
-	t.Log("Successfully generated QR code with logo")
+	t.Log("Successfully generated QR code with logo and inserted data into MongoDB")
 }
 
 

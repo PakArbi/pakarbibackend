@@ -42,7 +42,8 @@ type Parkiran struct {
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
 	Status         Status             `json:"status" bson:"status"`
-	QRCodeImage    []byte             `json:"qrcodeimage"`
+	Base64Image    string             `json:"base64image,omitempty" bson:"base64image,omitempty"`
+	LogoBase64     string             `json:"logobase64,omitempty" bson:"logobase64,omitempty"`
 }
 
 type Parkiran2 struct {
