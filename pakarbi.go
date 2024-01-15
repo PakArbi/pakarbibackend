@@ -15,6 +15,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/nfnt/resize"
+	// "github.com/huimingz/mongo-tools/common/json"
 	"github.com/skip2/go-qrcode"
 
 	"github.com/aiteung/atdb"
@@ -288,11 +289,22 @@ func InsertQRCodeDataToMongoDB(mconn *mongo.Database, collectionName, parkiranID
     return err
 }
 
+func replaceInvalidUTF8(input string) string {
+	result := make([]rune, 0, len(input))
+	for _, r := range input {
+		if r == utf8.RuneError {
+			_, size := utf8.DecodeRuneInString(string(r))
+			if size == 1 {
+				continue
+			}
+		}
+		result = append(result, r)
+	}
+	return string(result)
+}
 
 // GenerateQRCodeLogoBase64 generates QR code with logo and inserts data into MongoDB
 func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
-	// Insert Parkiran data into MongoDB
-	insertParkiran(mconn, collparkiran, dataparkiran)
 
 	// Convert struct to JSON
 	dataJSON, err := json.Marshal(dataparkiran)
@@ -300,10 +312,25 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 		return "", fmt.Errorf("failed to marshal JSON: %v", err)
 	}
 
+	// Replace invalid UTF-8 characters
+	dataJSON = []byte(replaceInvalidUTF8(string(dataJSON)))
+
 	// Ensure the dataJSON is valid UTF-8 encoded
 	if !utf8.Valid(dataJSON) {
-    return "", fmt.Errorf("data contains invalid UTF-8 characters")
+		return "", fmt.Errorf("data contains invalid UTF-8 characters")
 	}
+
+	// Insert Parkiran data into MongoDB
+	insertParkiran(mconn, collparkiran, Parkiran{
+		Parkiranid:     dataparkiran.Parkiranid,
+		Nama:           dataparkiran.Nama,
+		NPM:            dataparkiran.NPM,
+		Prodi:          dataparkiran.Prodi,
+		NamaKendaraan:  dataparkiran.NamaKendaraan,
+		NomorKendaraan: dataparkiran.NomorKendaraan,
+		JenisKendaraan: dataparkiran.JenisKendaraan,
+		Status:         dataparkiran.Status,
+	})
 
 	// Generate QR code
 	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
@@ -353,11 +380,24 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 	base64Writer := &bytes.Buffer{} // Use a buffer instead of base64.NewEncoder
 	err = imaging.Encode(base64Writer, result, imaging.PNG)
 	if err != nil {
-		return "", fmt.Errorf("failed to encode image: %v", err)
+	return "", fmt.Errorf("failed to encode image: %v", err)
 	}
 
-	// Get the base64 representation as a string
-	base64String = strings.TrimSpace(base64Writer.String())
+	// Convert base64 data to JSON string
+	base64Data := base64Writer.Bytes()
+	jsonString, err := json.Marshal(map[string]interface{}{"base64Image": base64.StdEncoding.EncodeToString(base64Data)})
+	if err != nil {
+	return "", fmt.Errorf("failed to convert base64 to JSON string: %v", err)
+	}
+
+	// Use jsonString as needed, for example, inserting into MongoDB
+	err = InsertQRCodeDataToMongoDB(mconn, "qrcodes", dataparkiran.Parkiranid, []byte(jsonString))
+	if err != nil {
+	return "", fmt.Errorf("failed to insert QR code data to MongoDB: %v", err)
+	}
+
+// Get the base64 representation as a string
+base64String = strings.TrimSpace(string(jsonString))
 
 	// Insert QR code data into MongoDB
 	err = InsertQRCodeDataToMongoDB(mconn, "qrcodes", dataparkiran.Parkiranid, []byte(base64String))
@@ -365,9 +405,12 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 		return "", fmt.Errorf("failed to insert QR code data to MongoDB: %v", err)
 	}
 
-	// Insert data into MongoDB collection along with base64 image data
-	dataparkiran.Base64Image = base64String
-	insertParkiran(mconn, collparkiran, dataparkiran) // Use insertParkiran2 for Parkiran2 type
+	// Update Parkiran data with Base64 image
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "data.base64Image", Value: base64String}}}}
+	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
+	if err != nil {
+		return "", fmt.Errorf("failed to update Parkiran data with Base64 image: %v", err)
+	}
 
 	return fileName, nil
 }
