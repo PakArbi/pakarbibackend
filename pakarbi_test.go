@@ -247,49 +247,48 @@ func TestLoginn(t *testing.T) {
 // }
 
 func TestInsertQRCodeDataToMongoDB(t *testing.T) {
-	// Set up your MongoDB connection
-	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
+    // Set up your MongoDB connection
+    mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 
-	// Set up a sample Parkiran struct for testing
-	dataparkiran := Parkiran{
-		Parkiranid:     "D41214041",
-		Nama:           "ULBI",
-		NPM:            "1214041",
-		Prodi:          "Computer Science",
-		NamaKendaraan:  "Car",
-		NomorKendaraan: "AB 1234 CD",
-		JenisKendaraan: "Sedan",
-		Status: Status{
-			Message:     "sudah masuk Parkir",
-			WaktuMasuk:  "some_waktu_masuk",
-			WaktuKeluar: "some_waktu_keluar",
-			// WaktuMasuk: time.Now().Format(time.RFC3339),
+    // Set up a sample Parkiran struct for testing
+    dataparkiran := Parkiran{
+        Parkiranid:     "D41214041",
+        Nama:           "ULBI",
+        NPM:            "1214041",
+        Prodi:          "Computer Science",
+        NamaKendaraan:  "Car",
+        NomorKendaraan: "AB 1234 CD",
+        JenisKendaraan: "Sedan",
+        Status: Status{
+            Message:     "sudah masuk Parkir",
+            WaktuMasuk:  "some_waktu_masuk",
+            WaktuKeluar: "some_waktu_keluar",
+        },
+    }
 
-		},
-	}
+    // Generate QR code with logo and insert into MongoDB
+    fileName, err := GenerateQRCodeLogoBase64(mconn, "parkiran", dataparkiran)
+    if err != nil {
+        t.Errorf("Error generating QR code with logo: %v", err)
+        return
+    }
 
-	// Generate QR code with logo and insert into MongoDB
-	fileName, err := GenerateQRCodeLogoBase64(mconn, "parkiran", dataparkiran)
-	if err != nil {
-		t.Errorf("Error generating QR code with logo: %v", err)
-		return
-	}
+    // Read the QR code file
+    qrCodeData, err := ioutil.ReadFile(fileName)
+    if err != nil {
+        t.Errorf("Error reading QR code file: %v", err)
+        return
+    }
 
-	// Read the QR code file
-	qrCodeData, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		t.Errorf("Error reading QR code file: %v", err)
-		return
-	}
+    // Insert QR code data into MongoDB
+    err = InsertQRCodeDataToMongoDB(mconn, "qrcodes", dataparkiran.Parkiranid, qrCodeData)
+    if err != nil {
+        t.Errorf("Error inserting QR code data to MongoDB: %v", err)
+        return
+    }
 
-	// Insert QR code data into MongoDB
-	err = InsertQRCodeDataToMongoDB(mconn, "qrcodes", dataparkiran.Parkiranid, qrCodeData)
-	if err != nil {
-		t.Errorf("Error inserting QR code data to MongoDB: %v", err)
-		return
-	}
-
-	t.Log("Successfully generated QR code with logo and inserted data into MongoDB")
+    t.Log("Successfully generated QR code with logo and inserted data into MongoDB")
 }
+
 
 
