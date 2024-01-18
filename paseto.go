@@ -286,116 +286,6 @@ func LoginAdmin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname 
 // }
 
 // FUNCTION INSERT PARKIRAN 1
-// func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
-// 	var response Credential
-// 	response.Status = false
-// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-// 	var userdata User
-// 	gettoken := r.Header.Get("Login")
-// 	if gettoken == "" {
-// 		response.Message = "Header Login Not Exist"
-// 	} else {
-// 		// Process the request with the "Login" token
-// 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-// 		userdata.NPM = checktoken
-// 		if checktoken == "" {
-// 			response.Message = "Kamu kayaknya belum punya akun"
-// 		} else {
-// 			user2 := FindUserNPM(mconn, colluser, userdata)
-// 			if user2.Role == "user" {
-// 				var dataparkiran Parkiran // Change to Parkiran type
-// 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
-// 				if err != nil {
-// 					response.Message = "Error parsing application/json: " + err.Error()
-// 				} else {
-// 					// Insert data to MongoDB
-// 					insertParkiran(mconn, collparkiran, Parkiran{
-// 						Parkiranid:     dataparkiran.Parkiranid,
-// 						Nama:           dataparkiran.Nama,
-// 						NPM:            dataparkiran.NPM,
-// 						Prodi:          dataparkiran.Prodi,
-// 						NamaKendaraan:  dataparkiran.NamaKendaraan,
-// 						NomorKendaraan: dataparkiran.NomorKendaraan,
-// 						JenisKendaraan: dataparkiran.JenisKendaraan,
-// 						Status:         dataparkiran.Status,
-// 					})
-
-// 					// Generate QR code with logo and base64 encoding
-// 					_, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
-// 					if err != nil {
-// 						response.Message = "Error generating QR code: " + err.Error()
-// 					} else {
-// 						response.Status = true
-// 						response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
-// 					}
-// 				}
-// 			} else {
-// 				response.Message = "Anda tidak dapat Insert data karena bukan user"
-// 			}
-// 		}
-// 	}
-// 	return GCFReturnStruct(response)
-// }
-
-// func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
-// 	var response Credential
-// 	response.Status = false
-// 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-// 	var userdata User
-// 	gettoken := r.Header.Get("Login")
-// 	if gettoken == "" {
-// 		response.Message = "Header Login Not Exist"
-// 	} else {
-// 		// Process the request with the "Login" token
-// 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-// 		userdata.NPM = checktoken
-// 		if checktoken == "" {
-// 			response.Message = "Kamu kayaknya belum punya akun"
-// 		} else {
-// 			user2 := FindUserEmail(mconn, colluser, userdata)
-// 			if user2.Role == "user" {
-// 				var dataparkiran Parkiran // Change to Parkiran type
-// 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
-// 				if err != nil {
-// 					response.Message = "Error parsing application/json: " + err.Error()
-// 				} if else err != nil {
-// 					// Insert data to MongoDB
-// 					insertParkiran(mconn, collparkiran, Parkiran{
-// 						Parkiranid:     dataparkiran.Parkiranid,
-// 						Nama:           dataparkiran.Nama,
-// 						NPM:            dataparkiran.NPM,
-// 						Prodi:          dataparkiran.Prodi,
-// 						NamaKendaraan:  dataparkiran.NamaKendaraan,
-// 						NomorKendaraan: dataparkiran.NomorKendaraan,
-// 						JenisKendaraan: dataparkiran.JenisKendaraan,
-// 						Status:         dataparkiran.Status,
-// 					})
-// 					else {
-// 						// Setelah berhasil mendapatkan data, tambahkan status secara otomatis
-// 						dataparkiran.Status = Status{
-// 							Message:      "Sudah masuk Parkir",
-// 							WaktuMasuk:   time.Now(),
-// 							WaktuKeluar:  time.Time{}, // Waktu keluar diatur menjadi nol karena belum keluar
-// 						}
-
-// 					// Generate QR code with logo and base64 encoding
-// 					_, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
-// 					if err != nil {
-// 						response.Message = "Error generating QR code: " + err.Error()
-// 					} else {
-// 						response.Status = true
-// 						response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
-// 					}
-// 				}
-// 			} else {
-// 				response.Message = "Anda tidak dapat Insert data karena bukan user"
-// 			}
-// 		}
-// 	}
-// 	return GCFReturnStruct(response)
-// }
-
-
 func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
@@ -413,52 +303,30 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 		} else {
 			user2 := FindUserNPM(mconn, colluser, userdata)
 			if user2.Role == "user" {
-				// Generate auto-incremented Parkiran ID
-				parkiranID, err := getNextParkiranID(mconn, collparkiran)
-				if err != nil {
-					response.Message = "Error generating Parkiran ID: " + err.Error()
-					return GCFReturnStruct(response)
-				}
-
-				// Create a Parkiran struct with auto-generated Parkiran ID
-				var dataparkiran Parkiran
-				err = json.NewDecoder(r.Body).Decode(&dataparkiran)
+				var dataparkiran Parkiran // Change to Parkiran type
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					// Set status automatically
-					dataparkiran.Status = Status{
-						Message:     "Sudah masuk Parkir",
-						WaktuMasuk:  time.Now(),
-						WaktuKeluar: time.Time{}, // Waktu keluar diatur menjadi nol karena belum keluar
-					}
-
-					// Set auto-incremented Parkiran ID
-					dataparkiran.Parkiranid = parkiranID
-
 					// Insert data to MongoDB
-					err := insertParkiran(mconn, collparkiran, Parkiran{
-						
+					insertParkiran(mconn, collparkiran, Parkiran{
+						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
 						NPM:            dataparkiran.NPM,
 						Prodi:          dataparkiran.Prodi,
 						NamaKendaraan:  dataparkiran.NamaKendaraan,
 						NomorKendaraan: dataparkiran.NomorKendaraan,
 						JenisKendaraan: dataparkiran.JenisKendaraan,
-						
+						Status:         dataparkiran.Status,
 					})
+
+					// Generate QR code with logo and base64 encoding
+					_, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
 					if err != nil {
-						response.Message = "Error inserting data to MongoDB: " + err.Error()
+						response.Message = "Error generating QR code: " + err.Error()
 					} else {
-						// Generate QR code with logo and base64 encoding
-						qrCodeBase64, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
-						if err != nil {
-							response.Message = "Error generating QR code: " + err.Error()
-						} else {
-							response.Status = true
-							response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
-							response.QRCodeBase64 = qrCodeBase64
-						}
+						response.Status = true
+						response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
 					}
 				}
 			} else {
@@ -468,6 +336,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	}
 	return GCFReturnStruct(response)
 }
+
 func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
@@ -485,52 +354,30 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 		} else {
 			user2 := FindUserEmail(mconn, colluser, userdata)
 			if user2.Role == "user" {
-				// Generate auto-incremented Parkiran ID
-				parkiranID, err := getNextParkiranID(mconn, collparkiran)
-				if err != nil {
-					response.Message = "Error generating Parkiran ID: " + err.Error()
-					return GCFReturnStruct(response)
-				}
-
-				// Create a Parkiran struct with auto-generated Parkiran ID
-				var dataparkiran Parkiran
-				err = json.NewDecoder(r.Body).Decode(&dataparkiran)
+				var dataparkiran Parkiran // Change to Parkiran type
+				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					// Set status automatically
-					dataparkiran.Status = Status{
-						Message:     "Sudah masuk Parkir",
-						WaktuMasuk:  time.Now(),
-						WaktuKeluar: time.Time{}, // Waktu keluar diatur menjadi nol karena belum keluar
-					}
-
-					// Set auto-incremented Parkiran ID
-					dataparkiran.Parkiranid = parkiranID
-
 					// Insert data to MongoDB
-					err := insertParkiran(mconn, collparkiran, Parkiran{
-						
+					insertParkiran(mconn, collparkiran, Parkiran{
+						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
 						NPM:            dataparkiran.NPM,
 						Prodi:          dataparkiran.Prodi,
 						NamaKendaraan:  dataparkiran.NamaKendaraan,
 						NomorKendaraan: dataparkiran.NomorKendaraan,
 						JenisKendaraan: dataparkiran.JenisKendaraan,
-						
+						Status:         dataparkiran.Status,
 					})
+
+					// Generate QR code with logo and base64 encoding
+					_, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
 					if err != nil {
-						response.Message = "Error inserting data to MongoDB: " + err.Error()
+						response.Message = "Error generating QR code: " + err.Error()
 					} else {
-						// Generate QR code with logo and base64 encoding
-						qrCodeBase64, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
-						if err != nil {
-							response.Message = "Error generating QR code: " + err.Error()
-						} else {
-							response.Status = true
-							response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
-							response.QRCodeBase64 = qrCodeBase64
-						}
+						response.Status = true
+						response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
 					}
 				}
 			} else {
@@ -541,33 +388,6 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	return GCFReturnStruct(response)
 }
 
-// Fungsi untuk mendapatkan auto-incremented Parkiran ID
-func getNextParkiranID(mconn *mongo.Database, collparkiran string, npm string) (string, error) {
-	var counter struct {
-		Count int `bson:"count"`
-	}
-
-	filter := bson.D{{"_id", "parkiranid_counter"}}
-
-	update := bson.D{
-		{"$inc", bson.D{{"count", 1}}},
-	}
-
-	options := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
-
-	result := mconn.Collection(collparkiran).FindOneAndUpdate(context.TODO(), filter, update, options)
-	if result.Err() != nil {
-		return "", result.Err()
-	}
-
-	err := result.Decode(&counter)
-	if err != nil {
-		return "", err
-	}
-
-	parkiranID := fmt.Sprintf("D%d%s", counter.Count, npm)
-	return parkiranID, nil
-}
 
 // GCF Update Data
 func GCFUpdateParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
@@ -712,33 +532,71 @@ func GCFDeleteParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	return GCFReturnStruct(respon)
 }
 
+// func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+// 	req := new(Response)
+// 	conn := SetConnection(MongoEnv, dbname)
+// 	tokenlogin := r.Header.Get("Login")
+// 	if tokenlogin == "" {
+// 		req.Status = false
+// 		req.Message = "Header Login Not Found"
+// 	} else {
+// 		// Dekode token untuk mendapatkan
+// 		_, err := DecodeGetParkiran(os.Getenv(PublicKey), tokenlogin)
+// 		if err != nil {
+// 			req.Status = false
+// 			req.Message = "Data Tersebut tidak ada" + tokenlogin
+// 		} else {
+// 			// Langsung ambil data catalog
+// 			dataparkiran := GetAllParkiran(conn, colname)
+// 			if dataparkiran == nil {
+// 				req.Status = false
+// 				req.Message = "Data Parkiran tidak ada"
+// 			} else {
+// 				req.Status = true
+// 				req.Message = "Data Parkiran berhasil diambil"
+// 				req.Data = dataparkiran
+// 			}
+// 		}
+// 	}
+// 	return ReturnStringStruct(req)
+// }
 func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
-	req := new(Response)
-	conn := SetConnection(MongoEnv, dbname)
-	tokenlogin := r.Header.Get("Login")
-	if tokenlogin == "" {
-		req.Status = false
-		req.Message = "Header Login Not Found"
-	} else {
-		// Dekode token untuk mendapatkan
-		_, err := DecodeGetParkiran(os.Getenv(PublicKey), tokenlogin)
-		if err != nil {
-			req.Status = false
-			req.Message = "Data Tersebut tidak ada" + tokenlogin
-		} else {
-			// Langsung ambil data catalog
-			dataparkiran := GetAllParkiran(conn, colname)
-			if dataparkiran == nil {
-				req.Status = false
-				req.Message = "Data Parkiran tidak ada"
-			} else {
-				req.Status = true
-				req.Message = "Data Parkiran berhasil diambil"
-				req.Data = dataparkiran
-			}
-		}
-	}
-	return ReturnStringStruct(req)
+    req := new(Response)
+    conn := SetConnection(MongoEnv, dbname)
+    tokenlogin := r.Header.Get("Login")
+    if tokenlogin == "" {
+        req.Status = false
+        req.Message = "Header Login Not Found"
+    } else {
+        _, err := DecodeGetParkiran(os.Getenv(PublicKey), tokenlogin)
+        if err != nil {
+            req.Status = false
+            req.Message = "Data Tersebut tidak ada" + tokenlogin
+        } else {
+            dataparkiran := GetAllParkiran(conn, colname)
+            if dataparkiran == nil {
+                req.Status = false
+                req.Message = "Data Parkiran tidak ada"
+            } else {
+                // Iterate through parkiran data and generate QR code
+                for i, parkiran := range dataparkiran {
+                    qrCode, err := GenerateQRCodeLogoBase64(conn, colname, parkiran)
+                    if err != nil {
+                        req.Status = false
+                        req.Message = "Error generating QR code: " + err.Error()
+                        return ReturnStringStruct(req)
+                    }
+                    // Include base64 image data in the response
+                    dataparkiran[i].Base64Image = qrCode
+                }
+
+                req.Status = true
+                req.Message = "Data Parkiran berhasil diambil"
+                req.Data = dataparkiran
+            }
+        }
+    }
+    return ReturnStringStruct(req)
 }
 
 func GetOneDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
