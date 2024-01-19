@@ -662,7 +662,7 @@ func GCFDeleteParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 // 	}
 // 	return ReturnStringStruct(req)
 // }
-func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+func GetAllDataParkiran2(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
     req := new(Response)
     conn := SetConnection(MongoEnv, dbname)
     tokenlogin := r.Header.Get("Login")
@@ -699,6 +699,35 @@ func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Req
         }
     }
     return ReturnStringStruct(req)
+}
+
+func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+	req := new(Response)
+	conn := SetConnection(MongoEnv, dbname)
+	tokenlogin := r.Header.Get("Login")
+	if tokenlogin == "" {
+		req.Status = false
+		req.Message = "Header Login Not Found"
+	} else {
+		// Dekode token untuk mendapatkan
+		_, err := DecodeGetParkiran(os.Getenv(PublicKey), tokenlogin)
+		if err != nil {
+			req.Status = false
+			req.Message = "Data Tersebut tidak ada" + tokenlogin
+		} else {
+			// Langsung ambil data catalog
+			dataparkiran := GetAllParkiran(conn, colname)
+			if dataparkiran == nil {
+				req.Status = false
+				req.Message = "Data Parkiran tidak ada"
+			} else {
+				req.Status = true
+				req.Message = "Data Parkiran berhasil diambil"
+				req.Data = dataparkiran
+			}
+		}
+	}
+	return ReturnStringStruct(req)
 }
 
 func GetOneDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
