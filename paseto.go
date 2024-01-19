@@ -301,12 +301,14 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	} else {
 		// Process the request with the "Login" token
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.NPM = checktoken
 		if checktoken == "" {
-			response.Message = "Kamu kayaknya belum punya akun"
+			response.Message = "Token decoding failed or user not found. Please check your token."
 		} else {
+			userdata.NPM = checktoken
 			user2 := FindUserNPM(mconn, colluser, userdata)
-			if user2.Role == "user" {
+			if user2.Role == "" {
+				response.Message = "User not found in the database. Make sure the user is registered."
+			} else if user2.Role == "user" {
 				var dataparkiran Parkiran // Change to Parkiran type
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
@@ -340,6 +342,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	}
 	return GCFReturnStruct(response)
 }
+
 
 func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
@@ -352,12 +355,14 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	} else {
 		// Process the request with the "Login" token
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.NPM = checktoken
 		if checktoken == "" {
-			response.Message = "Kamu kayaknya belum punya akun"
+			response.Message = "Token decoding failed or user not found. Please check your token."
 		} else {
+			userdata.NPM = checktoken
 			user2 := FindUserEmail(mconn, colluser, userdata)
-			if user2.Role == "user" {
+			if user2.Role == "" {
+				response.Message = "User not found in the database. Make sure the user is registered."
+			} else if user2.Role == "user" {
 				var dataparkiran Parkiran // Change to Parkiran type
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
@@ -391,6 +396,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	}
 	return GCFReturnStruct(response)
 }
+
 
 //GCF untuk Generate Code QR
 func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
