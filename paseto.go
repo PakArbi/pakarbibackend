@@ -213,7 +213,7 @@ func LoginAdmin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname 
 // 		response.Message = "Header Login Not Exist"
 // 	} else {
 // 		// Process the request with the "Login" token
-// 		checktoken := watoken.DecodeGetParkiran(os.Getenv(publickey), gettoken)
+// 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 // 		userdata.NPM = checktoken
 // 		if checktoken == "" {
 // 			response.Message = "Kamu kayaknya belum punya akun"
@@ -256,7 +256,7 @@ func LoginAdmin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname 
 // 		response.Message = "Header Login Not Exist"
 // 	} else {
 // 		// Process the request with the "Login" token
-// 		checktoken := watoken.DecodeGetParkiran(os.Getenv(publickey), gettoken)
+// 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 // 		userdata.Email = checktoken
 // 		if checktoken == "" {
 // 			response.Message = "Kamu kayaknya belum punya akun"
@@ -300,7 +300,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 		response.Message = "Header Login Not Exist"
 	} else {
 		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetParkiran(os.Getenv(publickey), gettoken)
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
@@ -343,7 +343,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 		response.Message = "Header Login Not Exist"
 	} else {
 		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetParkiran(os.Getenv(publickey), gettoken)
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
@@ -376,6 +376,8 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	return GCFReturnStruct(response)
 }
 
+
+
 func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
@@ -386,7 +388,7 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 		response.Message = "Header Login Not Exist"
 	} else {
 		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetParkiran(os.Getenv(publickey), gettoken)
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
@@ -398,7 +400,6 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					// Insert data to MongoDB
 					insertParkiran(mconn, collparkiran, Parkiran{
 						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
@@ -409,15 +410,14 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 						JenisKendaraan: dataparkiran.JenisKendaraan,
 						Status:         dataparkiran.Status,
 					})
-
 					// Generate QR code with logo and base64 encoding
-					qrImagePath, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
-					if err != nil {
-						response.Message = "Error generating QR code: " + err.Error()
-					} else {
-						response.Status = true
-						response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
-					}
+                    _, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
+                    if err != nil {
+                        response.Message = "Error generating QR code: " + err.Error()
+                    } else {
+                        response.Status = true
+                        response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
+                    }
 				}
 			} else {
 				response.Message = "Anda tidak dapat Insert data karena bukan user"
@@ -426,6 +426,8 @@ func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, coll
 	}
 	return GCFReturnStruct(response)
 }
+
+
 func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
@@ -436,7 +438,7 @@ func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, co
 		response.Message = "Header Login Not Exist"
 	} else {
 		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetParkiran(os.Getenv(publickey), gettoken)
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
@@ -448,7 +450,6 @@ func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, co
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					// Insert data to MongoDB
 					insertParkiran(mconn, collparkiran, Parkiran{
 						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
@@ -459,15 +460,14 @@ func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, co
 						JenisKendaraan: dataparkiran.JenisKendaraan,
 						Status:         dataparkiran.Status,
 					})
-
 					// Generate QR code with logo and base64 encoding
-					qrImagePath, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
-					if err != nil {
-						response.Message = "Error generating QR code: " + err.Error()
-					} else {
-						response.Status = true
-						response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
-					}
+                    _, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
+                    if err != nil {
+                        response.Message = "Error generating QR code: " + err.Error()
+                    } else {
+                        response.Status = true
+                        response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
+                    }
 				}
 			} else {
 				response.Message = "Anda tidak dapat Insert data karena bukan user"
@@ -476,6 +476,7 @@ func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, co
 	}
 	return GCFReturnStruct(response)
 }
+
 
 
 //GCF untuk Generate Code QR
@@ -489,7 +490,7 @@ func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran
 		response.Message = "Header Login Not Exist"
 	} else {
 		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetParkiran(os.Getenv(publickey), gettoken)
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
@@ -582,7 +583,7 @@ func GCFUpdateParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	if gettoken == "" {
 		response.Message = "Header Login Not Exist"
 	} else {
-		checktoken := watoken.DecodeGetParkiran(os.Getenv(publickey), gettoken)
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
@@ -617,7 +618,7 @@ func GCFUpdateParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	if gettoken == "" {
 		response.Message = "Header Login Not Exist"
 	} else {
-		checktoken := watoken.DecodeGetParkiran(os.Getenv(publickey), gettoken)
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.Email = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
@@ -655,7 +656,7 @@ func GCFDeleteParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 		respon.Message = "Header Login Not Exist"
 	} else {
 		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetUser(os.Getenv(publickey), gettoken)
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.NPM = checktoken
 		if checktoken == "" {
 			respon.Message = "Kamu kayaknya belum punya akun"
@@ -690,7 +691,7 @@ func GCFDeleteParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 		respon.Message = "Header Login Not Exist"
 	} else {
 		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetUser(os.Getenv(publickey), gettoken)
+		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
 		userdata.Email = checktoken
 		if checktoken == "" {
 			respon.Message = "Kamu kayaknya belum punya akun"
