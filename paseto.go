@@ -662,44 +662,45 @@ func GCFDeleteParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 // 	}
 // 	return ReturnStringStruct(req)
 // }
-func GetAllDataParkiran2(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
-    req := new(Response)
-    conn := SetConnection(MongoEnv, dbname)
-    tokenlogin := r.Header.Get("Login")
-    if tokenlogin == "" {
-        req.Status = false
-        req.Message = "Header Login Not Found"
-    } else {
-        _, err := DecodeGetParkiran(os.Getenv(PublicKey), tokenlogin)
-        if err != nil {
-            req.Status = false
-            req.Message = "Data Tersebut tidak ada" + tokenlogin
-        } else {
-            dataparkiran := GetAllParkiran(conn, colname)
-            if dataparkiran == nil {
-                req.Status = false
-                req.Message = "Data Parkiran tidak ada"
-            } else {
-                // Iterate through parkiran data and generate QR code
-                for i, parkiran := range dataparkiran {
-                    qrCode, err := GenerateQRCodeLogoBase64(conn, colname, parkiran)
-                    if err != nil {
-                        req.Status = false
-                        req.Message = "Error generating QR code: " + err.Error()
-                        return ReturnStringStruct(req)
-                    }
-                    // Include base64 image data in the response
-                    dataparkiran[i].Base64Image = qrCode
-                }
 
-                req.Status = true
-                req.Message = "Data Parkiran berhasil diambil"
-                req.Data = dataparkiran
-            }
-        }
-    }
-    return ReturnStringStruct(req)
-}
+// func GetAllDataParkiran2(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+//     req := new(Response)
+//     conn := SetConnection(MongoEnv, dbname)
+//     tokenlogin := r.Header.Get("Login")
+//     if tokenlogin == "" {
+//         req.Status = false
+//         req.Message = "Header Login Not Found"
+//     } else {
+//         _, err := DecodeGetParkiran(os.Getenv(PublicKey), tokenlogin)
+//         if err != nil {
+//             req.Status = false
+//             req.Message = "Data Tersebut tidak ada" + tokenlogin
+//         } else {
+//             dataparkiran := GetAllParkiran(conn, colname)
+//             if dataparkiran == nil {
+//                 req.Status = false
+//                 req.Message = "Data Parkiran tidak ada"
+//             } else {
+//                 // Iterate through parkiran data and generate QR code
+//                 for i, parkiran := range dataparkiran {
+//                     qrCode, err := GenerateQRCodeLogoBase64(conn, colname, parkiran)
+//                     if err != nil {
+//                         req.Status = false
+//                         req.Message = "Error generating QR code: " + err.Error()
+//                         return ReturnStringStruct(req)
+//                     }
+//                     // Include base64 image data in the response
+//                     dataparkiran[i].Base64Image = qrCode
+//                 }
+
+//                 req.Status = true
+//                 req.Message = "Data Parkiran berhasil diambil"
+//                 req.Data = dataparkiran
+//             }
+//         }
+//     }
+//     return ReturnStringStruct(req)
+// }
 
 func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
 	req := new(Response)
