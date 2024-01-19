@@ -53,41 +53,32 @@ func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (inser
 	}
 	return insertResult.InsertedID
 }
+//func untuk update status auto
+func UpdateStatusInMongoDB(mconn *mongo.Database, collname, parkiranID string, updatedStatus Status) error {
+    update := bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: updatedStatus}}}}
+    _, err := mconn.Collection(collname).UpdateOne(context.TODO(), bson.M{"parkiranid": parkiranID}, update)
+    return err
+}
 
-// <---FUNCTION UNTUK MENYIMPAN GAMBAR CODE QR KE MONGODB --->
-// func SaveQRCodeToMongoDB(qrCodePath string, MONGOCONNSTRINGENV, dbName, collectionName string) error {
-// 	// Buat koneksi ke MongoDB
-// 	mconn, err := SetConnection(MONGOCONNSTRINGENV, dbName)
-// 	if err != nil {
-// 		return err
-// 	}
+// <---FUNCTION UNTUK MENCARI DAN Mengambil GAMBAR CODE QR DI MONGODB --->
+func GetQRCodeDataFromMongoDB(mconn *mongo.Database, collname, parkiranID string) (string, error) {
+	result := mconn.Collection(collname).FindOne(context.TODO(), bson.M{"parkiranid": parkiranID})
+	if result.Err() != nil {
+		return "", fmt.Errorf("failed to find QR code data: %v", result.Err())
+	}
 
-// 	// Baca file gambar kode QR
-// 	qrCodeFile, err := os.Open(qrCodePath)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer qrCodeFile.Close()
+	var data map[string]interface{}
+	if err := result.Decode(&data); err != nil {
+		return "", fmt.Errorf("failed to decode QR code data: %v", err)
+	}
 
-// 	// Baca konten gambar kode QR
-// 	qrCodeData, err := ioutil.ReadAll(qrCodeFile)
-// 	if err != nil {
-// 		return err
-// 	}
+	base64Image, ok := data["base64Image"].(string)
+	if !ok {
+		return "", fmt.Errorf("base64Image not found or not a string")
+	}
 
-// 	// Pilih database dan koleksi
-// 	database := mconn.Database(dbName)
-// 	collection := database.Collection(collectionName)
-
-// 	// Simpan gambar kode QR ke MongoDB
-// 	_, err = collection.InsertOne(context.Background(), bson.M{"qrcode": qrCodeData})
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
+	return base64Image, nil
+}
 // <--- FUNCTION USER --->
 func InsertUserdata(MongoConn *mongo.Database, usernameid, username, npm, password, passwordhash, email, role string) (InsertedID interface{}) {
 	req := new(User)

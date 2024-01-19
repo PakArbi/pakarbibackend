@@ -252,13 +252,13 @@ func TestInsertQRCodeDataToMongoDB(t *testing.T) {
 
     // Set up a sample Parkiran struct for testing
     dataparkiran := Parkiran{
-        Parkiranid:     "D41214041",
-        Nama:           "ULBI",
-        NPM:            "1214041",
+        Parkiranid:     "D41214001",
+        Nama:           "ULBI2024",
+        NPM:            "1214001",
         Prodi:          "Computer Science",
-        NamaKendaraan:  "Car",
+        NamaKendaraan:  "Yamaha",
         NomorKendaraan: "AB 1234 CD",
-        JenisKendaraan: "Sedan",
+        JenisKendaraan: "Motor",
         Status: Status{
             Message:     "sudah masuk Parkir",
             WaktuMasuk:  "some_waktu_masuk",
