@@ -334,6 +334,7 @@ func saveImage(img image.Image, fileName string) error {
 
 	return nil
 }
+
 func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
 	// Convert struct to JSON
 	dataJSON, err := json.Marshal(dataparkiran)
