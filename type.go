@@ -42,8 +42,7 @@ type Parkiran struct {
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
 	Status         Status             `json:"status, omitempty" bson:"status,omitempty"`
-	Base64Image    string             `json:"base64image,omitempty" bson:"base64image,omitempty"`
-	LogoBase64     string             `json:"logobase64,omitempty" bson:"logobase64,omitempty"`
+	QRCode		   QRCode			  `json:"qrcode" bson:"qrcode"`	
 }
 
 type Status struct {
@@ -57,17 +56,15 @@ type RequestParkiran struct {
 	Parkiranid string `json:"parkiranid"`
 }
 
-type QRData struct {
-	ParkiranID string `bson:"parkiranid"`
-	Image      string `bson:"image"`
+type QRCode struct {
+	Base64Image    string             `json:"base64image,omitempty" bson:"base64image,omitempty"`
+	LogoBase64     string             `json:"logobase64,omitempty" bson:"logobase64,omitempty"`
 }
 
-type Time struct {
-	Message     string `json:"message,omitempty" bson:"message,omitempty"`
-	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
-	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
+type Sequence struct {
+	ID    string `bson:"_id,omitempty"`
+	Value int    `bson:"value,omitempty"`
 }
-
 
 type Credential struct {
 	Status  bool   `json:"status" bson:"status"`
@@ -76,10 +73,17 @@ type Credential struct {
 	Data    string `json:"data,omitempty" bson:"data,omitempty"`
 }
 
+
 type Response struct {
 	Status  bool        `json:"status" bson:"status"`
 	Message string      `json:"message" bson:"message"`
 	Data    interface{} `json:"data" bson:"data"`
+}
+
+type Time struct {
+	Message     string `json:"message,omitempty" bson:"message,omitempty"`
+	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
+	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
 }
 
 type ResponseParkiran struct {
@@ -87,8 +91,6 @@ type ResponseParkiran struct {
 	Message string   `json:"message"`
 	Data    Parkiran `json:"data"`
 }
-
-
 
 type Payload struct {
 	User     string    `json:"user"`

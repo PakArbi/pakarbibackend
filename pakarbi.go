@@ -342,10 +342,19 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 		return "", fmt.Errorf("failed to marshal JSON: %v", err)
 	}
 
-	// Ensure the dataJSON is valid UTF-8 encoded
-	if !utf8.Valid(dataJSON) {
-		return "", fmt.Errorf("data contains invalid UTF-8 characters")
+	// Create auto-incremented Parkiran ID
+	parkiranID, err := createParkiranID(mconn)
+	if err != nil {
+		return "", fmt.Errorf("failed to create Parkiran ID: %v", err)
 	}
+
+	// Assign auto-incremented ID to dataparkiran
+	dataparkiran.Parkiranid = parkiranID
+	
+	// Ensure the dataJSON is valid UTF-8 encoded
+	// if !utf8.Valid(dataJSON) {
+	// 	return "", fmt.Errorf("data contains invalid UTF-8 characters")
+	// }
 
 	// Generate QR code
 	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
@@ -399,18 +408,18 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 	}
 
 	// Update data Parkiran dengan gambar Base64
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "base64Image", Value: finalImageBase64}}}}
-	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
-	if err != nil {
-		return "", fmt.Errorf("gagal memperbarui data Parkiran dengan gambar Base64: %v", err)
-	}
+	// update := bson.D{{Key: "$set", Value: bson.D{{Key: "base64Image", Value: finalImageBase64}}}}
+	// _, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
+	// if err != nil {
+	// 	return "", fmt.Errorf("gagal memperbarui data Parkiran dengan gambar Base64: %v", err)
+	// }
 
-	// Generate gambar dari data base64
-	imageFileName := filepath.Join("qrcode", fmt.Sprintf("%s_imageQrCode.png", dataparkiran.Parkiranid))
-	_, err = GenerateImageFromBase64(finalImageBase64, imageFileName)
-	if err != nil {
-		return "", fmt.Errorf("gagal menghasilkan gambar dari data base64: %v", err)
-	}
+	// // Generate gambar dari data base64
+	// imageFileName := filepath.Join("qrcode", fmt.Sprintf("%s_imageQrCode.png", dataparkiran.Parkiranid))
+	// _, err = GenerateImageFromBase64(finalImageBase64, imageFileName)
+	// if err != nil {
+	// 	return "", fmt.Errorf("gagal menghasilkan gambar dari data base64: %v", err)
+	// }
 
 	return fileName, nil
 }
@@ -716,8 +725,8 @@ func CreateUserAndAddToken(privateKeyEnv string, mongoconn *mongo.Database, coll
 	return nil
 }
 
-func CreateStatus(status string, message string, data interface{}, requestParkiran RequestParkiran) Status2 {
-	return Status2{
+func CreateStatus(status string, message string, data interface{}, requestParkiran RequestParkiran) Status {
+	return Status{
 		Status:          status,
 		Message:         message,
 		DataParkir:      data,

@@ -228,11 +228,36 @@ func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKe
 		NamaKendaraan:  namaKendaraan,
 		NomorKendaraan: nomorKendaraan,
 		JenisKendaraan: jenisKendaraan,
-		Status: Status{
-			Message:     statusMessage,
-			WaktuMasuk:  waktuMasuk,
-			WaktuKeluar: waktuKeluar,
-		},
 	}
 	return InsertOneDoc(MongoConn, "user", req)
+}
+
+//fungi ubtuk mengurutkan id
+func getNextSequence(mconn *mongo.Database, sequenceName string) (int, error) {
+	filter := bson.M{"_id": sequenceName}
+	update := bson.M{"$inc": bson.M{"value": 1}}
+
+	var sequence Sequence
+	err := mconn.Collection("sequences").FindOneAndUpdate(context.Background(), filter, update).Decode(&sequence)
+	if err != nil {
+		// Sequence belum ada, buat baru
+		_, err = mconn.Collection("sequences").InsertOne(context.Background(), bson.M{"_id": sequenceName, "value": 1})
+		if err != nil {
+			return 0, fmt.Errorf("gagal membuat sequence baru: %v", err)
+		}
+		return 1, nil
+	}
+
+	return sequence.Value, nil
+}
+
+//fungsi membuat id jadi autoincrement
+func createParkiranID(mconn *mongo.Database) (string, error) {
+	nextValue, err := getNextSequence(mconn, "parkiran_sequence")
+	if err != nil {
+		return "", err
+	}
+
+	parkiranID := fmt.Sprintf("%03d", nextValue)
+	return parkiranID, nil
 }

@@ -259,11 +259,6 @@ func TestInsertQRCodeDataToMongoDB(t *testing.T) {
         NamaKendaraan:  "Yamaha",
         NomorKendaraan: "AB 1234 CD",
         JenisKendaraan: "Motor",
-        Status: Status{
-            Message:     "sudah masuk Parkir",
-            WaktuMasuk:  "some_waktu_masuk",
-            WaktuKeluar: "some_waktu_keluar",
-        },
     }
 
     // Generate QR code with logo and insert into MongoDB
