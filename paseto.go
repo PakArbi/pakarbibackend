@@ -1,14 +1,14 @@
 package pakarbibackend
 
 import (
-	"encoding/json"
 	"encoding/base64"
-	"net/http"
-	"io/ioutil"
-	"os"
+	"encoding/json"
 	"fmt"
-	"strings"
+	"io/ioutil"
+	"net/http"
+	"os"
 	"regexp"
+	"strings"
 
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
@@ -312,6 +312,9 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
+					// Menggunakan GenerateParkiranID untuk mendapatkan Parkiran ID
+					dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
+
 					insertParkiran(mconn, collparkiran, Parkiran{
 						Parkiranid:     dataparkiran.Parkiranid,
 						Nama:           dataparkiran.Nama,
@@ -476,9 +479,6 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 // 	return GCFReturnStruct(response)
 // }
 
-
-
-
 // func GCFInsertParkiranNPM2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 // 	var response Credential
 // 	response.Status = false
@@ -527,7 +527,6 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 // 	}
 // 	return GCFReturnStruct(response)
 // }
-
 
 // func GCFInsertParkiranEmail2(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 // 	var response Credential
@@ -578,9 +577,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 // 	return GCFReturnStruct(response)
 // }
 
-
-
-//GCF untuk Generate Code QR
+// GCF untuk Generate Code QR
 func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
@@ -596,8 +593,19 @@ func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
 		} else {
-			user2 := FindUserNPM(mconn, colluser, userdata)
-			if user2.Role == "user" {
+			// Mendapatkan informasi user berdasarkan NPM dan Email
+			userNPM := FindUserByField(mconn, colluser, "npm", userdata.NPM)
+			userEmail := FindUserByField(mconn, colluser, "email", userdata.Email)
+
+			// Mengecek peran user berdasarkan NPM atau Email
+			var userRole string
+			if userNPM.Role == "user" {
+				userRole = userNPM.Role
+			} else if userEmail.Role == "user" {
+				userRole = userEmail.Role
+			}
+
+			if userRole == "user" {
 				var dataparkiran Parkiran // Change to Parkiran type
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
@@ -654,6 +662,7 @@ func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran
 	}
 	return GCFReturnStruct(response)
 }
+
 
 func GCFGetQRCode(MONGOCONNSTRINGENV, dbname, collparkiran, parkiranID string) (string, error) {
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
@@ -876,8 +885,11 @@ func GCFGetAllParkiranID(MONGOCONNSTRINGENV, dbname, collectionname string, r *h
 		return GCFReturnStruct(CreateResponse(false, "Failed to decode request body", nil))
 	}
 
+	// Generate Parkiran ID using the provided NPM
+	dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
+
 	parkiran := GetAllParkiranID(mconn, collectionname, dataparkiran)
-	if parkiran.Parkiranid != 0 {
+	if parkiran.Parkiranid != "" {
 		return GCFReturnStruct(CreateResponse(true, "Success: Get ID Parkiran", parkiran))
 	} else {
 		return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Parkiran", nil))
@@ -892,11 +904,14 @@ func GCFGetOneParkiran(MONGOCONNSTRINGENV, dbname, collectionname string, r *htt
 	if err != nil {
 		return GCFReturnStruct(CreateResponse(false, "Failed to decode request body", nil))
 	}
+	// Generate Parkiran ID using the provided NPM
+	dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
+	// Assuming you have a function to retrieve parkiran by ID, NPM, and Nama Mahasiswa
+	parkiran := GetOneParkiranData(mconn, collectionname, dataparkiran.Parkiranid)  // Perubahan pada argumen pemanggilan
 
-	parkiran := GetAllParkiranID(mconn, collectionname, dataparkiran)
-	if parkiran.Parkiranid (Parkiran{}) {
-		return GCFReturnStruct(CreateResponse(true, "Success: Get ID Parkiran", parkiran))
+	if parkiran != (Parkiran{}) {
+		return GCFReturnStruct(CreateResponse(true, "Success: Get Parkiran Data", parkiran))
 	} else {
-		return GCFReturnStruct(CreateResponse(false, "Failed to Get ID Parkiran", nil))
+		return GCFReturnStruct(CreateResponse(false, "Failed to Get Parkiran Data", nil))
 	}
 }

@@ -3,15 +3,15 @@ package pakarbibackend
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"encoding/base64"
-	"unicode/utf8"
-	"image/png"
+	"encoding/json"
 	"fmt"
-	"strings"
 	"image"
+	"image/png"
 	"os"
 	"path/filepath"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/disintegration/imaging"
 	"github.com/nfnt/resize"
@@ -220,7 +220,7 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, collparkiran string, datapark
 	return fileName, nil
 }
 
-//functione
+// functione
 func ImageToBase64(imagePath string) (string, error) {
 	imageFile, err := os.Open(imagePath)
 	if err != nil {
@@ -271,26 +271,26 @@ func ImageToBase64(imagePath string) (string, error) {
 
 // InsertQRCodeDataToMongoDB inserts QR code data into MongoDB
 func InsertQRCodeDataToMongoDB(mconn *mongo.Database, collectionName, parkiranID string, qrCodeData []byte) error {
-    // Encode QR code data as Base64
-    qrCodeBase64 := base64.StdEncoding.EncodeToString(qrCodeData)
+	// Encode QR code data as Base64
+	qrCodeBase64 := base64.StdEncoding.EncodeToString(qrCodeData)
 
-    // Decode the Base64 data to ensure correctness
-    _, err := base64.StdEncoding.DecodeString(qrCodeBase64)
-    if err != nil {
-        return fmt.Errorf("failed to decode Base64 data: %v", err)
-    }
+	// Decode the Base64 data to ensure correctness
+	_, err := base64.StdEncoding.DecodeString(qrCodeBase64)
+	if err != nil {
+		return fmt.Errorf("failed to decode Base64 data: %v", err)
+	}
 
-    // Your implementation here to insert qrCodeData into MongoDB
-    // You can use the provided MongoDB connection (mconn) and collectionName to perform the insertion
+	// Your implementation here to insert qrCodeData into MongoDB
+	// You can use the provided MongoDB connection (mconn) and collectionName to perform the insertion
 
-    collection := mconn.Collection(collectionName)
+	collection := mconn.Collection(collectionName)
 
-    _, err = collection.InsertOne(context.TODO(), bson.M{
-        "parkiranID": parkiranID,
-        "qrCodeData": qrCodeBase64,
-    })
+	_, err = collection.InsertOne(context.TODO(), bson.M{
+		"parkiranID": parkiranID,
+		"qrCodeData": qrCodeBase64,
+	})
 
-    return err
+	return err
 }
 
 func replaceInvalidUTF8(input string) string {
@@ -308,15 +308,15 @@ func replaceInvalidUTF8(input string) string {
 }
 
 func resizeLogo(logoBase64 string) (image.Image, error) {
-    // Decode the ULBI logo
-    logo, _, err := image.Decode(base64.NewDecoder(base64.StdEncoding, strings.NewReader(logoBase64)))
-    if err != nil {
-        return nil, fmt.Errorf("failed to decode logo image: %v", err)
-    }
+	// Decode the ULBI logo
+	logo, _, err := image.Decode(base64.NewDecoder(base64.StdEncoding, strings.NewReader(logoBase64)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode logo image: %v", err)
+	}
 
-    // Resize the logo
-    resizedLogo := resize.Resize(80, 0, logo, resize.Lanczos3)
-    return resizedLogo, nil
+	// Resize the logo
+	resizedLogo := resize.Resize(80, 0, logo, resize.Lanczos3)
+	return resizedLogo, nil
 }
 
 func saveImage(img image.Image, fileName string) error {
@@ -350,7 +350,7 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 
 	// Assign auto-incremented ID to dataparkiran
 	dataparkiran.Parkiranid = parkiranID
-	
+
 	// Ensure the dataJSON is valid UTF-8 encoded
 	// if !utf8.Valid(dataJSON) {
 	// 	return "", fmt.Errorf("data contains invalid UTF-8 characters")
@@ -535,7 +535,6 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 // 	return fileName, nil
 // }
 
-
 // GenerateImageFromBase64 generates an image from base64 data and returns the file name
 func GenerateImageFromBase64(base64Data string, fileName string) (string, error) {
 	// Decode the base64 data
@@ -560,9 +559,6 @@ func GenerateImageFromBase64(base64Data string, fileName string) (string, error)
 	return fileName, nil
 }
 
-
-
-
 // // GenerateQRCodeLogoBase64 generates QR code with logo and inserts data into MongoDB
 // func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
 // 	// Insert Parkiran data into MongoDB
@@ -573,12 +569,12 @@ func GenerateImageFromBase64(base64Data string, fileName string) (string, error)
 // 	if err != nil {
 // 		return "", fmt.Errorf("failed to marshal JSON: %v", err)
 // 	}
-   
+
 // 	// Generate QR code
 // 	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
 // 	if err != nil {
 // 		return "", fmt.Errorf("failed to generate QR code: %v", err)
-	
+
 // 	}
 // 	// Create an image from the QR code
 // 	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
@@ -641,7 +637,6 @@ func GenerateImageFromBase64(base64Data string, fileName string) (string, error)
 
 // 	return fileName, nil
 // }
-
 
 // <--- FUNCTION CRUD --->
 func GetAllDocs(db *mongo.Database, col string, docs interface{}) interface{} {
@@ -868,12 +863,32 @@ func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
 }
 
 // <---FUNCTION GENERATE FOR PARKIRANID --->
+func getProdiByNPM(npm string) string {
+	// Mendapatkan digit pertama dari NPM
+	firstDigit := string(npm[0])
+
+	// Mengembalikan prodi berdasarkan digit pertama
+	switch firstDigit {
+	case "1":
+		return "D3"
+	case "2":
+		return "D4"
+	// Tambahkan case sesuai kebutuhan
+	default:
+		return "Unknown"
+	}
+}
+
 func GenerateParkiranID(npm string) string {
+	// Mendapatkan prodi berdasarkan digit pertama NPM
+	prodi := getProdiByNPM(npm)
+
 	// Contoh: Jika NPM adalah '1214000'. maka yang diambil '4000'
 	// Anda dapat menggunakan beberapa digit terakhir dari NPM
 	// Misalnya, mengambil 4 digit terakhir (atau lebih sesuai kebutuhan)
 	lastDigits := npm[len(npm)-4:] // Mengambil 4 digit terakhir dari NPM
-	return "D3/D4" + lastDigits    // Menggabungkan pola dengan digit terakhir dari NPM
+
+	return prodi + lastDigits // Menggabungkan pola dengan digit terakhir dari NPM
 }
 
 // <--- FUNCTION CRUD PARKIRAN --->

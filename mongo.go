@@ -53,11 +53,12 @@ func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (inser
 	}
 	return insertResult.InsertedID
 }
-//func untuk update status auto
+
+// func untuk update status auto
 func UpdateStatusInMongoDB(mconn *mongo.Database, collname, parkiranID string, updatedStatus Status) error {
-    update := bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: updatedStatus}}}}
-    _, err := mconn.Collection(collname).UpdateOne(context.TODO(), bson.M{"parkiranid": parkiranID}, update)
-    return err
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: updatedStatus}}}}
+	_, err := mconn.Collection(collname).UpdateOne(context.TODO(), bson.M{"parkiranid": parkiranID}, update)
+	return err
 }
 
 // <---FUNCTION UNTUK MENCARI DAN Mengambil GAMBAR CODE QR DI MONGODB --->
@@ -79,6 +80,7 @@ func GetQRCodeDataFromMongoDB(mconn *mongo.Database, collname, parkiranID string
 
 	return base64Image, nil
 }
+
 // <--- FUNCTION USER --->
 func InsertUserdata(MongoConn *mongo.Database, usernameid, username, npm, password, passwordhash, email, role string) (InsertedID interface{}) {
 	req := new(User)
@@ -95,6 +97,11 @@ func InsertUserdata(MongoConn *mongo.Database, usernameid, username, npm, passwo
 func DeleteUser(mongoconn *mongo.Database, collection string, userdata User) interface{} {
 	filter := bson.M{"npm": userdata.NPM}
 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
+}
+
+func FindUserByField(mongoconn *mongo.Database, collection, searchField, searchValue string) User {
+    filter := bson.M{searchField: searchValue}
+    return atdb.GetOneDoc[User](mongoconn, collection, filter)
 }
 
 func FindUserNPM(mongoconn *mongo.Database, collection string, userdata User) User {
@@ -219,6 +226,7 @@ func GetParkiranById(mconn *mongo.Database, collectionname, parkiranID string) (
 
 // function Parkiran
 func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKendaraan, nomorKendaraan, jenisKendaraan, statusMessage, waktuMasuk, waktuKeluar string) (InsertedID interface{}) {
+	// Generate Parkiran ID
 	parkiranID := GenerateParkiranID(npm)
 	req := Parkiran{
 		Parkiranid:     parkiranID,
@@ -232,7 +240,7 @@ func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKe
 	return InsertOneDoc(MongoConn, "user", req)
 }
 
-//fungi ubtuk mengurutkan id
+// fungi ubtuk mengurutkan id
 func getNextSequence(mconn *mongo.Database, sequenceName string) (int, error) {
 	filter := bson.M{"_id": sequenceName}
 	update := bson.M{"$inc": bson.M{"value": 1}}
@@ -251,7 +259,7 @@ func getNextSequence(mconn *mongo.Database, sequenceName string) (int, error) {
 	return sequence.Value, nil
 }
 
-//fungsi membuat id jadi autoincrement
+// fungsi membuat id jadi autoincrement
 func createParkiranID(mconn *mongo.Database) (string, error) {
 	nextValue, err := getNextSequence(mconn, "parkiran_sequence")
 	if err != nil {

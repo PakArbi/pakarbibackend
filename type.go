@@ -42,7 +42,7 @@ type Parkiran struct {
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
 	Status         Status             `json:"status, omitempty" bson:"status,omitempty"`
-	QRCode		   QRCode			  `json:"qrcode" bson:"qrcode"`	
+	QRCode         QRCode             `json:"qrcode" bson:"qrcode"`
 }
 
 type Status struct {
@@ -57,8 +57,8 @@ type RequestParkiran struct {
 }
 
 type QRCode struct {
-	Base64Image    string             `json:"base64image,omitempty" bson:"base64image,omitempty"`
-	LogoBase64     string             `json:"logobase64,omitempty" bson:"logobase64,omitempty"`
+	Base64Image string `json:"base64image,omitempty" bson:"base64image,omitempty"`
+	LogoBase64  string `json:"logobase64,omitempty" bson:"logobase64,omitempty"`
 }
 
 type Sequence struct {
@@ -72,7 +72,6 @@ type Credential struct {
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 	Data    string `json:"data,omitempty" bson:"data,omitempty"`
 }
-
 
 type Response struct {
 	Status  bool        `json:"status" bson:"status"`

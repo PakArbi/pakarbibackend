@@ -42,4 +42,3 @@ func DecodeGetUser(PublicKey, tokenStr string) (user string, err error) {
 	}
 	return key.User, nil
 }
-
