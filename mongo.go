@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
+	"encoding/base64"
 
 
 	"github.com/aiteung/atdb"
@@ -79,6 +81,51 @@ func GetQRCodeDataFromMongoDB(mconn *mongo.Database, collname, parkiranID string
 	}
 
 	return base64Image, nil
+}
+func ScanQRCode(mconn *mongo.Database, collparkiran, qrcodeData string) (ScanResult, error) {
+	var result ScanResult
+
+	// Decode QR code data
+	qrCodeBytes, err := base64.StdEncoding.DecodeString(qrcodeData)
+	if err != nil {
+		return result, fmt.Errorf("failed to decode QR code data: %v", err)
+	}
+
+	// Convert QR code data to string
+	qrCodeString := string(qrCodeBytes)
+
+	// Find Parkiran entry by QR code data
+	var parkiran Parkiran
+	err = mconn.Collection(collparkiran).FindOne(context.TODO(), bson.M{"qrcode.base64image": qrCodeString}).Decode(&parkiran)
+	if err != nil {
+		return result, fmt.Errorf("failed to find Parkiran by QR code: %v", err)
+	}
+
+	// Check if the entry timestamp is available
+	if parkiran.Status.DataParkir.WaktuMasuk != "" {
+		waktuMasuk, err := time.Parse(time.RFC3339, parkiran.Status.DataParkir.WaktuMasuk)
+		if err != nil {
+			return result, fmt.Errorf("failed to parse entry timestamp: %v", err)
+		}
+		result.WaktuMasuk = waktuMasuk
+	}
+
+	// Update data Parkiran with timestamp for waktu keluar
+	currentTime := time.Now()
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "status.dataparkir.waktukeluar", Value: currentTime.Format(time.RFC3339)},
+		}},
+	}
+	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": parkiran.Parkiranid}, update)
+	if err != nil {
+		return result, fmt.Errorf("failed to update data Parkiran with timestamp for waktu keluar: %v", err)
+	}
+
+	result.Message = "QR code scanned successfully"
+	result.WaktuKeluar = currentTime
+
+	return result, nil
 }
 
 // <--- FUNCTION USER --->
@@ -240,32 +287,50 @@ func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKe
 	return InsertOneDoc(MongoConn, "user", req)
 }
 
-// fungi ubtuk mengurutkan id
-func getNextSequence(mconn *mongo.Database, sequenceName string) (int, error) {
+// fungi untuk mengurutkan id
+func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
+	// Membuat filter untuk mencari dokumen dengan _id sesuai sequenceName
 	filter := bson.M{"_id": sequenceName}
-	update := bson.M{"$inc": bson.M{"value": 1}}
+	
+	// Membuat update untuk menambahkan nilai sequence
+	update := bson.M{"$inc": bson.M{"seq": 1}}
 
-	var sequence Sequence
-	err := mconn.Collection("sequences").FindOneAndUpdate(context.Background(), filter, update).Decode(&sequence)
-	if err != nil {
-		// Sequence belum ada, buat baru
-		_, err = mconn.Collection("sequences").InsertOne(context.Background(), bson.M{"_id": sequenceName, "value": 1})
-		if err != nil {
-			return 0, fmt.Errorf("gagal membuat sequence baru: %v", err)
-		}
-		return 1, nil
+	// Membuat variabel untuk menyimpan hasil sequence
+	var result struct {
+		Seq int `bson:"seq"`
 	}
 
-	return sequence.Value, nil
+	// Membuat opsi untuk mengembalikan dokumen setelah update
+	after := options.After
+	opt := &options.FindOneAndUpdateOptions{
+		ReturnDocument: &after,
+	}
+
+	// Mengambil koleksi untuk sequence dari database dan melakukan operasi FindOneAndUpdate
+	collection := mongoconn.Collection("counters")
+	err := collection.FindOneAndUpdate(context.TODO(), filter, update, opt).Decode(&result)
+	if err != nil {
+		// Menghandle kesalahan jika terjadi
+	}
+
+	// Mengembalikan nilai sequence yang telah diincrement
+	return result.Seq
 }
 
-// fungsi membuat id jadi autoincrement
-func createParkiranID(mconn *mongo.Database) (string, error) {
-	nextValue, err := getNextSequence(mconn, "parkiran_sequence")
+func CreateParkiranNomor(mongoconn *mongo.Database, sequenceName string, parkiran Parkiran) error {
+	// Mendapatkan nilai sequence berikutnya
+	nextSequence := SequenceAutoIncrement(mongoconn, sequenceName)
+
+	// Menetapkan nilai Nomor pada struktur data Parkiran
+	parkiran.Nomor = &nextSequence
+
+	// Menyisipkan data Parkiran ke dalam database
+	_, err := mongoconn.Collection("parkiran").InsertOne(context.TODO(), parkiran)
 	if err != nil {
-		return "", err
+		// Mengembalikan kesalahan jika gagal menyisipkan data Parkiran
+		return fmt.Errorf("gagal menyisipkan data Parkiran: %v", err)
 	}
 
-	parkiranID := fmt.Sprintf("%03d", nextValue)
-	return parkiranID, nil
+	// Mengembalikan nilai-nilai tanpa kesalahan jika berhasil
+	return nil
 }

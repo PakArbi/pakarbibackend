@@ -9,6 +9,7 @@ import (
 	"image"
 	"image/png"
 	"os"
+	"time"
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
@@ -23,7 +24,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	// "go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // <---Function Generate Code QR--->
@@ -335,6 +336,86 @@ func saveImage(img image.Image, fileName string) error {
 	return nil
 }
 
+// func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
+// 	// Convert struct to JSON
+// 	dataJSON, err := json.Marshal(dataparkiran)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to marshal JSON: %v", err)
+// 	}
+
+// 	Ensure the dataJSON is valid UTF-8 encoded
+// 	if !utf8.Valid(dataJSON) {
+// 		return "", fmt.Errorf("data contains invalid UTF-8 characters")
+// 	}
+
+// 	// Generate QR code
+// 	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to generate QR code: %v", err)
+// 	}
+
+// 	// Open the ULBI logo file from the "qrcode" folder
+// 	logoFilePath := filepath.Join("qrcode", "logo_ulbi.png")
+// 	logoBase64, err := ImageToBase64(logoFilePath)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to convert logo to base64: %v", err)
+// 	}
+
+// 	// Resize the logo
+// 	resizedLogo, err := resizeLogo(logoBase64)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to resize logo: %v", err)
+// 	}
+
+// 	// Create an image from the QR code
+// 	qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to decode QR code image: %v", err)
+// 	}
+
+// 	// Calculate position to overlay the logo on the QR code
+// 	x := (qrImage.Bounds().Dx() - resizedLogo.Bounds().Dx()) / 2
+// 	y := (qrImage.Bounds().Dy() - resizedLogo.Bounds().Dy()) / 2
+
+// 	// Draw the logo onto the QR code
+// 	result := imaging.Overlay(qrImage, resizedLogo, image.Pt(x, y), 1.0)
+
+// 	// Save the final QR code with logo
+// 	fileName := filepath.Join("qrcode", fmt.Sprintf("%s_qrcodes.png", dataparkiran.Parkiranid))
+// 	err = saveImage(result, fileName)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to save image: %v", err)
+// 	}
+
+// 	// Convert the final image to base64
+// 	finalImageBase64, err := ImageToBase64(fileName)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to convert final image to base64: %v", err)
+// 	}
+
+// 	// Insert QR code data into MongoDB
+// 	err = InsertQRCodeDataToMongoDB(mconn, "qrcodes", dataparkiran.Parkiranid, []byte(finalImageBase64))
+// 	if err != nil {
+// 		return "", fmt.Errorf("gagal memasukkan data QR code ke MongoDB: %v", err)
+// 	}
+
+// 	Update data Parkiran dengan gambar Base64
+// 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "base64Image", Value: finalImageBase64}}}}
+// 	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
+// 	if err != nil {
+// 		return "", fmt.Errorf("gagal memperbarui data Parkiran dengan gambar Base64: %v", err)
+// 	}
+
+// 	// Generate gambar dari data base64
+// 	imageFileName := filepath.Join("qrcode", fmt.Sprintf("%s_imageQrCode.png", dataparkiran.Parkiranid))
+// 	_, err = GenerateImageFromBase64(finalImageBase64, imageFileName)
+// 	if err != nil {
+// 		return "", fmt.Errorf("gagal menghasilkan gambar dari data base64: %v", err)
+// 	}
+
+// 	return fileName, nil
+// }
+
 func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
 	// Convert struct to JSON
 	dataJSON, err := json.Marshal(dataparkiran)
@@ -342,19 +423,10 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 		return "", fmt.Errorf("failed to marshal JSON: %v", err)
 	}
 
-	// Create auto-incremented Parkiran ID
-	parkiranID, err := createParkiranID(mconn)
-	if err != nil {
-		return "", fmt.Errorf("failed to create Parkiran ID: %v", err)
-	}
-
-	// Assign auto-incremented ID to dataparkiran
-	dataparkiran.Parkiranid = parkiranID
-
 	// Ensure the dataJSON is valid UTF-8 encoded
-	// if !utf8.Valid(dataJSON) {
-	// 	return "", fmt.Errorf("data contains invalid UTF-8 characters")
-	// }
+	if !utf8.Valid(dataJSON) {
+		return "", fmt.Errorf("data contains invalid UTF-8 characters")
+	}
 
 	// Generate QR code
 	qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
@@ -407,22 +479,22 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 		return "", fmt.Errorf("gagal memasukkan data QR code ke MongoDB: %v", err)
 	}
 
-	// Update data Parkiran dengan gambar Base64
-	// update := bson.D{{Key: "$set", Value: bson.D{{Key: "base64Image", Value: finalImageBase64}}}}
-	// _, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
-	// if err != nil {
-	// 	return "", fmt.Errorf("gagal memperbarui data Parkiran dengan gambar Base64: %v", err)
-	// }
-
-	// // Generate gambar dari data base64
-	// imageFileName := filepath.Join("qrcode", fmt.Sprintf("%s_imageQrCode.png", dataparkiran.Parkiranid))
-	// _, err = GenerateImageFromBase64(finalImageBase64, imageFileName)
-	// if err != nil {
-	// 	return "", fmt.Errorf("gagal menghasilkan gambar dari data base64: %v", err)
-	// }
+	// Update data Parkiran with real-time data
+	currentTime := time.Now()
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "status.dataparkir.waktumasuk", Value: currentTime.Format(time.RFC3339)},
+			{Key: "nomor", Value: dataparkiran.Nomor}, // Update nomor field
+		}},
+	}
+	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
+	if err != nil {
+		return "", fmt.Errorf("failed to update data Parkiran with timestamp for waktu masuk: %v", err)
+	}
 
 	return fileName, nil
 }
+
 
 // func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
 
@@ -720,11 +792,11 @@ func CreateUserAndAddToken(privateKeyEnv string, mongoconn *mongo.Database, coll
 	return nil
 }
 
-func CreateStatus(status string, message string, data interface{}, requestParkiran RequestParkiran) Status {
+func CreateStatus(status string, message string, dataParkir DataParkir, requestParkiran RequestParkiran) Status {
 	return Status{
 		Status:          status,
 		Message:         message,
-		DataParkir:      data,
+		DataParkir:      dataParkir,
 		RequestParkiran: requestParkiran,
 	}
 }
@@ -839,27 +911,6 @@ func CreateAdmin(mongoconn *mongo.Database, collection string, admindata Admin) 
 
 	// Insert the admin data into the database
 	return atdb.InsertOneDoc(mongoconn, collection, admindata)
-}
-
-// function mekanisme untuk auto-increment
-func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
-	filter := bson.M{"_id": sequenceName}
-	update := bson.M{"$inc": bson.M{"seq": 1}}
-
-	var result struct {
-		Seq int `bson:"seq"`
-	}
-
-	after := options.After
-	opt := &options.FindOneAndUpdateOptions{
-		ReturnDocument: &after,
-	}
-	collection := mongoconn.Collection("counters")
-	err := collection.FindOneAndUpdate(context.TODO(), filter, update, opt).Decode(&result)
-	if err != nil {
-		// handle error
-	}
-	return result.Seq
 }
 
 // <---FUNCTION GENERATE FOR PARKIRANID --->

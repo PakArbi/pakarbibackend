@@ -34,6 +34,7 @@ type Admin struct {
 
 type Parkiran struct {
 	ID             primitive.ObjectID `bson:"_id,omitempty" `
+	Nomor          *int                `json:"nomor,omitempty" bson:"nomor,omitempty"`
 	Parkiranid     string             `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
 	Nama           string             `json:"nama,omitempty" bson:"nama,omitempty"`
 	NPM            string             `json:"npm,omitempty" bson:"npm,omitempty"`
@@ -45,10 +46,15 @@ type Parkiran struct {
 	QRCode         QRCode             `json:"qrcode" bson:"qrcode"`
 }
 
+type DataParkir struct {
+	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
+	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
+}
+
 type Status struct {
 	Status          string          `json:"status,omitempty" bson:"status,omitempty"`
 	Message         string          `json:"message,omitempty" bson:"message,omitempty"`
-	DataParkir      interface{}     `json:"dataparkir,omitempty" bson:"dataparkir,omitempty"`
+	DataParkir      DataParkir     `json:"dataparkir,omitempty" bson:"dataparkir,omitempty"`
 	RequestParkiran RequestParkiran `json:"requestparkiran,omitempty" bson:"requestparkiran,omitempty"`
 }
 
@@ -61,9 +67,15 @@ type QRCode struct {
 	LogoBase64  string `json:"logobase64,omitempty" bson:"logobase64,omitempty"`
 }
 
+type ScanResult struct {
+	Message   string    `json:"message,omitempty"`
+	WaktuMasuk time.Time `json:"waktumasuk,omitempty"`
+	WaktuKeluar time.Time `json:"waktukeluar,omitempty"`
+}
+
 type Sequence struct {
-	ID    string `bson:"_id,omitempty"`
-	Value int    `bson:"value,omitempty"`
+	ID  string `bson:"_id,omitempty"`
+	Seq int    `bson:"seq,omitempty"`
 }
 
 type Credential struct {
@@ -79,11 +91,7 @@ type Response struct {
 	Data    interface{} `json:"data" bson:"data"`
 }
 
-type Time struct {
-	Message     string `json:"message,omitempty" bson:"message,omitempty"`
-	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
-	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
-}
+
 
 type ResponseParkiran struct {
 	Status  bool     `json:"status"`

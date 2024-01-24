@@ -301,10 +301,10 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	} else {
 		// Process the request with the "Login" token
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
 		} else {
+			userdata.NPM = checktoken
 			user2 := FindUserNPM(mconn, colluser, userdata)
 			if user2.Role == "user" {
 				var dataparkiran Parkiran
@@ -346,10 +346,10 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	} else {
 		// Process the request with the "Login" token
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.Email = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
 		} else {
+			userdata.Email = checktoken
 			user2 := FindUserEmail(mconn, colluser, userdata)
 			if user2.Role == "user" {
 				var dataparkiran Parkiran
@@ -589,10 +589,10 @@ func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran
 	} else {
 		// Process the request with the "Login" token
 		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		userdata.NPM = checktoken
 		if checktoken == "" {
 			response.Message = "Kamu kayaknya belum punya akun"
 		} else {
+			userdata.NPM = checktoken
 			// Mendapatkan informasi user berdasarkan NPM dan Email
 			userNPM := FindUserByField(mconn, colluser, "npm", userdata.NPM)
 			userEmail := FindUserByField(mconn, colluser, "email", userdata.Email)
@@ -604,7 +604,6 @@ func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran
 			} else if userEmail.Role == "user" {
 				userRole = userEmail.Role
 			}
-
 			if userRole == "user" {
 				var dataparkiran Parkiran // Change to Parkiran type
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
@@ -620,7 +619,7 @@ func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran
 						NamaKendaraan:  dataparkiran.NamaKendaraan,
 						NomorKendaraan: dataparkiran.NomorKendaraan,
 						JenisKendaraan: dataparkiran.JenisKendaraan,
-						Status:         dataparkiran.Status,
+						
 					})
 
 					// Generate QR code with logo and base64 encoding

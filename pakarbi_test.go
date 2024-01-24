@@ -256,7 +256,7 @@ func TestInsertQRCodeDataToMongoDB(t *testing.T) {
 		Nama:           "ULBI2024",
 		NPM:            "1214001",
 		Prodi:          "Computer Science",
-		NamaKendaraan:  "Yamaha",
+		NamaKendaraan:  "Honda",
 		NomorKendaraan: "AB 1234 CD",
 		JenisKendaraan: "Motor",
 	}
