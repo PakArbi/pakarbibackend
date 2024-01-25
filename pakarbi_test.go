@@ -66,18 +66,18 @@ func TestGFCPostHandlerUser(t *testing.T) {
 	CreateNewUserRole(mconn, "user", userdata)
 }
 
-// func TestParkiran(t *testing.T) {
-// 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
-// 	var parkirandata Parkiran
-// 	parkirandata.Parkiranid = "D41214000"
-// 	parkirandata.Nama = "ULBI"
-// 	parkirandata.NPM = "1214000"
-// 	parkirandata.Prodi = "D4 Teknik Informatika"
-// 	parkirandata.NamaKendaraan = "ULBI BUS"
-// 	parkirandata.NomorKendaraan = "D 1234 NR"
-// 	parkirandata.JenisKendaraan = "Mobil"
-// 	CreateNewParkiran(mconn, "parkiran", parkirandata)
-// }
+func TestParkiran(t *testing.T) {
+	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
+	var parkirandata Parkiran
+	parkirandata.Parkiranid = "D41214000"
+	parkirandata.Nama = "ULBI"
+	parkirandata.NPM = "1214000"
+	parkirandata.Prodi = "D4 Teknik Informatika"
+	parkirandata.NamaKendaraan = "ULBI BUS"
+	parkirandata.NomorKendaraan = "D 1234 NR"
+	parkirandata.JenisKendaraan = "Mobil"
+	CreateNewParkiran(mconn, "parkiran", parkirandata)
+}
 
 func TestAllParkiran(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")

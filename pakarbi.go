@@ -5,24 +5,23 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
 	"image/png"
 	"os"
 	"path/filepath"
-	"errors"
 
-	"github.com/disintegration/imaging"
-	"github.com/skip2/go-qrcode"
 	"github.com/boombuler/barcode/qr"
+	"github.com/disintegration/imaging"
 	"github.com/nfnt/resize"
+	"github.com/skip2/go-qrcode"
 
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-
 )
 
 // <---Function Generate Code QR--->
@@ -192,7 +191,6 @@ func imageToBase64(img image.Image) (string, error) {
 //     return fileName, nil
 // }
 
-
 // <---FUNCTION GENERATE FOR PARKIRANID --->
 // Ambil npm 2 belakang.
 func GetLastDigitsNPM(npm string) string {
@@ -209,7 +207,6 @@ func GenerateParkiranID(npm string, option string) (string, error) {
 	}
 	return option + lastDigits, nil
 }
-
 
 func ImageToBase64(imagePath string) (string, error) {
 	imageFile, err := os.Open(imagePath)
@@ -468,6 +465,23 @@ func DeleteParkiran(mongoconn *mongo.Database, collection string, parkirandata P
 	filter := bson.M{"parkiranid": parkirandata.Parkiranid}
 	return atdb.DeleteOneDoc(mongoconn, collection, filter)
 }
+
+func DeleteQRCodeData(mconn *mongo.Database, collparkiran, parkiranID string) error {
+	collection := mconn.Collection(collparkiran)
+
+	// Delete QR code data based on Parkiranid
+	_, err := collection.UpdateOne(
+		context.TODO(),
+		bson.M{"parkiranid": parkiranID},
+		bson.D{{Key: "$unset", Value: bson.D{{Key: "base64Image"}}}},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to delete QR code data: %v", err)
+	}
+
+	return nil
+}
+
 
 func UpdatedParkiran(mongoconn *mongo.Database, collection string, filter bson.M, parkirandata Parkiran) interface{} {
 	updatedFilter := bson.M{"parkiranid": parkirandata.Parkiranid}
