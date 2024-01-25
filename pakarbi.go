@@ -482,6 +482,25 @@ func DeleteQRCodeData(mconn *mongo.Database, collparkiran, parkiranID string) er
 	return nil
 }
 
+// DeleteQRCodeData menghapus data QR code dari MongoDB
+func DeleteQRCodeData2(mconn *mongo.Database, collparkiran, parkiranID string) error {
+	// Hapus data parkiran dari MongoDB
+	_, err := mconn.Collection(collparkiran).DeleteOne(context.TODO(), bson.M{"parkiranid": parkiranID})
+	if err != nil {
+		return fmt.Errorf("failed to delete parkiran data: %v", err)
+	}
+
+	// Implementasikan logika penghapusan QR code jika diperlukan
+
+	return nil
+}
+
+
+func UpdateParkiran(mconn *mongo.Database, collparkiran string, newData Parkiran) error {
+	update := bson.D{{Key: "$set", Value: newData}}
+	_, err := mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": newData.Parkiranid}, update)
+	return err
+}
 
 func UpdatedParkiran(mongoconn *mongo.Database, collection string, filter bson.M, parkirandata Parkiran) interface{} {
 	updatedFilter := bson.M{"parkiranid": parkirandata.Parkiranid}
