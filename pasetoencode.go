@@ -40,5 +40,5 @@ func DecodeGetUser(PublicKey, tokenStr string) (user string, err error) {
 		fmt.Println("Cannot decode the token", err.Error())
 		return "", err
 	}
-	return key.User, nil
+	return key.Parkiran, nil
 }
