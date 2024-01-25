@@ -14,12 +14,12 @@ import (
 
 func TestCreateNewUserRole(t *testing.T) {
 	var userdata User
-	userdata.UsernameId = "D4TI1214006"
-	userdata.Username = "sidiq"
-	userdata.NPM = "1214006"
-	userdata.Password = "jujur"
-	userdata.PasswordHash = "jujur"
-	userdata.Email = "1214006@std.ulbi.ac.id"
+	userdata.UsernameId = "D4TI1214000"
+	userdata.Username = "ULBICAMPUS"
+	userdata.NPM = "1214000"
+	userdata.Password = "ulbipass"
+	userdata.PasswordHash = "ulbipass"
+	userdata.Email = "1214000@std.ulbi.ac.id"
 	userdata.Role = "user"
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	CreateNewUserRole(mconn, "user", userdata)
@@ -34,12 +34,12 @@ func TestCreateNewUserRole(t *testing.T) {
 
 func CreateNewUserToken(t *testing.T) {
 	var userdata User
-	userdata.UsernameId = "D4TI1214006"
-	userdata.Username = "sidiq"
-	userdata.NPM = "1214006"
-	userdata.Password = "jujur"
-	userdata.PasswordHash = "jujur"
-	userdata.Email = "1214006@std.ulbi.ac.id"
+	userdata.UsernameId = "D4TI1214000"
+	userdata.Username = "ULBICAMPUS"
+	userdata.NPM = "1214000"
+	userdata.Password = "ulbipass"
+	userdata.PasswordHash = "ulbipass"
+	userdata.Email = "1214000@std.ulbi.ac.id"
 	userdata.Role = "user"
 
 	// Create a MongoDB connection
@@ -56,28 +56,28 @@ func CreateNewUserToken(t *testing.T) {
 func TestGFCPostHandlerUser(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.UsernameId = "D4TI1214006"
-	userdata.Username = "sidiq"
-	userdata.NPM = "1214006"
-	userdata.Password = "jujur"
-	userdata.PasswordHash = "jujur"
-	userdata.Email = "1214006@std.ulbi.ac.id"
+	userdata.UsernameId = "D4TI1214000"
+	userdata.Username = "ULBICAMPUS"
+	userdata.NPM = "1214000"
+	userdata.Password = "ulbipass"
+	userdata.PasswordHash = "ulbipass"
+	userdata.Email = "1214000@std.ulbi.ac.id"
 	userdata.Role = "user"
 	CreateNewUserRole(mconn, "user", userdata)
 }
 
-func TestParkiran(t *testing.T) {
-	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
-	var parkirandata Parkiran
-	parkirandata.Parkiranid = "D41214006"
-	parkirandata.Nama = "Syafa"
-	parkirandata.NPM = "1214006"
-	parkirandata.Prodi = "D4 Teknik Informatika"
-	parkirandata.NamaKendaraan = "Supra X 125"
-	parkirandata.NomorKendaraan = "F 1234 NR"
-	parkirandata.JenisKendaraan = "Motor"
-	CreateNewParkiran(mconn, "parkiran", parkirandata)
-}
+// func TestParkiran(t *testing.T) {
+// 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
+// 	var parkirandata Parkiran
+// 	parkirandata.Parkiranid = "D41214000"
+// 	parkirandata.Nama = "ULBI"
+// 	parkirandata.NPM = "1214000"
+// 	parkirandata.Prodi = "D4 Teknik Informatika"
+// 	parkirandata.NamaKendaraan = "ULBI BUS"
+// 	parkirandata.NomorKendaraan = "D 1234 NR"
+// 	parkirandata.JenisKendaraan = "Mobil"
+// 	CreateNewParkiran(mconn, "parkiran", parkirandata)
+// }
 
 func TestAllParkiran(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
@@ -86,7 +86,7 @@ func TestAllParkiran(t *testing.T) {
 }
 
 func TestGeneratePasswordHash(t *testing.T) {
-	passwordhash := "jujur"
+	passwordhash := "ulbipass"
 	hash, _ := HashPass(passwordhash) // ignore error for the sake of simplicity
 
 	fmt.Println("Password:", passwordhash)
@@ -98,15 +98,15 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
 	fmt.Println(privateKey)
 	fmt.Println(publicKey)
-	hasil, err := watoken.Encode("jujur", privateKey)
+	hasil, err := watoken.Encode("ulbipass", privateKey)
 	fmt.Println(hasil, err)
 }
 
 func TestHashFunction(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.NPM = "1214006"
-	userdata.PasswordHash = "jujur"
+	userdata.NPM = "1214000"
+	userdata.PasswordHash = "ulbipass"
 
 	filter := bson.M{"npm": userdata.NPM}
 	res := atdb.GetOneDoc[User](mconn, "user", filter)
@@ -121,8 +121,8 @@ func TestHashFunction(t *testing.T) {
 func TestIsPasswordValid(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.NPM = "1214006"
-	userdata.PasswordHash = "jujur"
+	userdata.NPM = "1214000"
+	userdata.PasswordHash = "ulbipass"
 
 	anu := IsPasswordValidNPM(mconn, "user", userdata)
 	fmt.Println(anu)
@@ -131,12 +131,12 @@ func TestIsPasswordValid(t *testing.T) {
 func TestUserFix(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.UsernameId = "D4TI1214006"
-	userdata.Username = "sidiq"
-	userdata.NPM = "1214006"
-	userdata.Password = "jujur"
-	userdata.PasswordHash = "jujur"
-	userdata.Email = "1214006@std.ulbi.ac.id"
+	userdata.UsernameId = "D4TI1214000"
+	userdata.Username = "ULBICAMPUS"
+	userdata.NPM = "1214000"
+	userdata.Password = "ulbipass"
+	userdata.PasswordHash = "ulbipass"
+	userdata.Email = "1214000@std.ulbi.ac.id"
 	userdata.Role = "user"
 	CreateUser(mconn, "user", userdata)
 }
@@ -164,42 +164,43 @@ func TestGeneratePrivateKeyPasetoAdmin(t *testing.T) {
 func TestLoginn(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.NPM = "1214006"
-	userdata.PasswordHash = "jujur"
+	userdata.NPM = "1214000"
+	userdata.PasswordHash = "ulbipass"
 	IsPasswordValidNPM(mconn, "user", userdata)
 	fmt.Println(userdata)
 }
 
 func TestInsertQRCodeDataToMongoDB(t *testing.T) {
-    // Set up your MongoDB connection
-    mconn := SetConnection("MONGOSTRING", "PakArbiApp")
+	// Set up your MongoDB connection
+	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 
-    // Set up a sample Parkiran struct for testing
-    dataparkiran := Parkiran{
-        Parkiranid:     "D41214006",
-        Nama:           "sidiq",
-        NPM:            "1214006",
-        Prodi:          "Sistem Informasi",
-        NamaKendaraan:  "Suzuki",
-        NomorKendaraan: "F 1234 GT",
-        JenisKendaraan: "Motor",
-    }
+	// Set up a sample Parkiran struct for testing
+	dataparkiran := Parkiran{
+		Parkiranid:     "D41214000",
+		Nama:           "ULBICAMPUS",
+		NPM:            "1214000",
+		Prodi:          "D4 Teknik Informatika",
+		NamaKendaraan:  "ULBIBUS",
+		NomorKendaraan: "D 1234 ULBI",
+		JenisKendaraan: "Mobil",
+		Status:         "Mahasiswa Aktif",
+		JamMasuk:       "08:00",
+		JamKeluar:      "15:00",
+	}
 
-    // Generate QR code with logo and insert into MongoDB
-    fileName, err := GenerateQRCodeBase64(mconn, "parkiran", dataparkiran)
-    if err != nil {
-        t.Errorf("Error generating QR code with logo: %v", err)
-        return
-    }
+	// Generate QR code with logo and insert into MongoDB
+	fileName, err := GenerateQRCodeBase64(mconn, "parkiran", dataparkiran)
+	if err != nil {
+		t.Errorf("Error generating QR code with logo: %v", err)
+		return
+	}
 
-    // Read the QR code file
-    _, errRead := ioutil.ReadFile(fileName)  // Change 'err' to 'errRead'
-    if errRead != nil {
-        t.Errorf("Error reading QR code file: %v", errRead)
-        return
-    }
+	// Read the QR code file
+	_, errRead := ioutil.ReadFile(fileName) // Change 'err' to 'errRead'
+	if errRead != nil {
+		t.Errorf("Error reading QR code file: %v", errRead)
+		return
+	}
 
-    t.Log("Successfully generated QR code with logo and inserted data into MongoDB")
+	t.Log("Successfully generated QR code with logo and inserted data into MongoDB")
 }
-
-
