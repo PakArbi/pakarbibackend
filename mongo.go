@@ -70,7 +70,6 @@ func InsertQRCodeDataToMongoDB(mconn *mongo.Database, parkiranID string, qrCodeD
     update := bson.D{
         {"$set", bson.D{
             {"base64image", qrCodeBase64},
-            {"logobase64", qrCodeBase64}, // Assuming logo data is also included in qrCodeData
         }},
     }
 
@@ -81,6 +80,7 @@ func InsertQRCodeDataToMongoDB(mconn *mongo.Database, parkiranID string, qrCodeD
 
     return nil
 }
+
 
 
 // InsertParkiran untuk menyimpan data ke mongodb collection parkiran
