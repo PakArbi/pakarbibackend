@@ -308,13 +308,6 @@ func GCFGenerateCodeQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpark
                     response.Message = "Error parsing application/json: " + err.Error()
                 } else {
                     // Generate Parkiran ID
-                    parkiranID, err := GenerateParkiranID(npm, option)
-					if err != nil {
-						// Handle the error, e.g., return an error response or log it
-						fmt.Printf("Error generating Parkiran ID: %v\n", err)
-						return nil
-					}
-
                     // Insert Parkiran data
                     insertParkiran(mconn, collparkiran, Parkiran{
                         Parkiranid:     dataparkiran.Parkiranid,
