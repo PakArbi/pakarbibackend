@@ -134,22 +134,25 @@ func resizeLogo(logoBase64 string) (image.Image, error) {
 }
 
 func GenerateQRCodeBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
-    // Convert struct to JSON
-    dataJSON, err := json.Marshal(dataparkiran)
-    if err != nil {
-        return "", fmt.Errorf("failed to marshal JSON: %v", err)
-    }
+	// Convert struct to JSON
+	dataJSON, err := json.Marshal(dataparkiran)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal JSON: %v", err)
+	}
+
+	// Encode JSON as base64
+	encodedJSON := base64.StdEncoding.EncodeToString(dataJSON)
 
     // Ensure the dataJSON is valid UTF-8 encoded
     if !utf8.Valid(dataJSON) {
         return "", fmt.Errorf("data contains invalid UTF-8 characters")
     }
 
-    // Generate QR code
-    qrCode, err := qrcode.Encode(string(dataJSON), qrcode.Medium, 256)
-    if err != nil {
-        return "", fmt.Errorf("failed to generate QR code: %v", err)
-    }
+     // Generate QR code
+	 qrCode, err := qrcode.Encode(encodedJSON, qrcode.Medium, 256)
+	 if err != nil {
+		 return "", fmt.Errorf("failed to generate QR code: %v", err)
+	 }
 
     // Create an image from the QR code
     qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
