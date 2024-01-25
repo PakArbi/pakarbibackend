@@ -3,7 +3,7 @@ package pakarbibackend
 import (
 	"fmt"
 	// "os"
-	// "path/filepath"
+	"context"
 	"io/ioutil"
 	"testing"
 
@@ -196,11 +196,18 @@ func TestInsertQRCodeDataToMongoDB(t *testing.T) {
 	}
 
 	// Read the QR code file
-	_, errRead := ioutil.ReadFile(fileName) // Change 'err' to 'errRead'
+	_, errRead := ioutil.ReadFile(fileName)
 	if errRead != nil {
 		t.Errorf("Error reading QR code file: %v", errRead)
 		return
 	}
 
-	t.Log("Successfully generated QR code with logo and inserted data into MongoDB")
+	// Check if the data is inserted into MongoDB correctly
+	result := mconn.Collection("parkiran").FindOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid})
+	if result.Err() != nil {
+		t.Errorf("Failed to find inserted data in MongoDB: %v", result.Err())
+		return
+	}
+
+	t.Log("Successfully generated QR code with logo, inserted data into MongoDB, and verified QR code file existence.")
 }

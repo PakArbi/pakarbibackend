@@ -10,13 +10,12 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
-	"strings"
-	"unicode/utf8"
 	"errors"
 
 	"github.com/disintegration/imaging"
-	"github.com/nfnt/resize"
 	"github.com/skip2/go-qrcode"
+	"github.com/boombuler/barcode/qr"
+	"github.com/nfnt/resize"
 
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
@@ -91,105 +90,107 @@ func GenerateQRCodeWithLogo(mconn *mongo.Database, collparkiran string, datapark
 }
 
 // functione
-func replaceInvalidUTF8(input string) string {
-	result := make([]rune, 0, len(input))
-	for _, r := range input {
-		if r == utf8.RuneError {
-			_, size := utf8.DecodeRuneInString(string(r))
-			if size == 1 {
-				continue
-			}
-		}
-		result = append(result, r)
-	}
-	return string(result)
-}
-
-func saveImage(img image.Image, fileName string) error {
-	outFile, err := os.Create(fileName)
-	if err != nil {
-		return err
-	}
-	defer outFile.Close()
-
-	// Encode the image into PNG format
-	err = png.Encode(outFile, img)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func resizeLogo(logoBase64 string) (image.Image, error) {
-	// Decode the ULBI logo
-	logo, _, err := image.Decode(base64.NewDecoder(base64.StdEncoding, strings.NewReader(logoBase64)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode logo image: %v", err)
-	}
-
-	// Resize the logo
-	resizedLogo := resize.Resize(80, 0, logo, resize.Lanczos3)
-	return resizedLogo, nil
-}
-
 func GenerateQRCodeBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
-	// Convert struct to JSON
-	dataJSON, err := json.Marshal(dataparkiran)
+	// Generate QR code
+	qrCode, err := generateQRCode(dataparkiran.Parkiranid)
 	if err != nil {
-		return "", fmt.Errorf("failed to marshal JSON: %v", err)
+		return "", fmt.Errorf("failed to generate QR code: %v", err)
 	}
 
-	// Encode JSON as base64
-	encodedJSON := base64.StdEncoding.EncodeToString(dataJSON)
+	// Resize the QR code image
+	qrCode = resize.Resize(256, 256, qrCode, resize.Lanczos3)
 
-    // Ensure the dataJSON is valid UTF-8 encoded
-    if !utf8.Valid(dataJSON) {
-        return "", fmt.Errorf("data contains invalid UTF-8 characters")
-    }
+	// Convert the QR code image to base64
+	qrBase64, err := imageToBase64(qrCode)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert QR code image to base64: %v", err)
+	}
 
-     // Generate QR code
-	 qrCode, err := qrcode.Encode(encodedJSON, qrcode.Medium, 256)
-	 if err != nil {
-		 return "", fmt.Errorf("failed to generate QR code: %v", err)
-	 }
+	// Update data Parkiran dengan gambar Base64
+	update := bson.D{{Key: "$set", Value: bson.D{
+		{Key: "base64Image", Value: qrBase64},
+	}}}
+	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
+	if err != nil {
+		return "", fmt.Errorf("failed to update Parkiran data with base64 image: %v", err)
+	}
 
-    // Create an image from the QR code
-    qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
-    if err != nil {
-        return "", fmt.Errorf("failed to decode QR code image: %v", err)
-    }
-
-    // Save the final QR code
-    fileName := filepath.Join("qrcode", fmt.Sprintf("%s_qrcode.png", dataparkiran.Parkiranid))
-    err = saveImage(qrImage, fileName)
-    if err != nil {
-        return "", fmt.Errorf("failed to save image: %v", err)
-    }
-
-    // Convert the final image to base64
-    finalImageBase64, err := ImageToBase64(fileName)
-    if err != nil {
-        return "", fmt.Errorf("failed to convert final image to base64: %v", err)
-    }
-
-    // Insert Parkiran data into MongoDB
-    err = InsertParkiran(mconn, collparkiran, dataparkiran)
-    if err != nil {
-        return "", fmt.Errorf("failed to insert Parkiran data to MongoDB: %v", err)
-    }
-
-    // Update data Parkiran dengan gambar Base64
-    update := bson.D{{Key: "$set", Value: bson.D{
-        {Key: "base64Image", Value: finalImageBase64},
-    }}}
-    _, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
-    if err != nil {
-        return "", fmt.Errorf("gagal memperbarui data Parkiran dengan gambar Base64: %v", err)
-    }
-
-    return fileName, nil
+	return "", nil
 }
+
+// generateQRCode generates a QR code for the given data.
+func generateQRCode(data string) (image.Image, error) {
+	qrCode, err := qr.Encode(data, qr.M, qr.Auto)
+	if err != nil {
+		return nil, err
+	}
+	return qrCode, nil
+}
+
+// imageToBase64 converts an image to base64.
+func imageToBase64(img image.Image) (string, error) {
+	var imgData []byte
+	buffer := new(bytes.Buffer)
+	err := png.Encode(buffer, img)
+	if err != nil {
+		return "", err
+	}
+	imgData = buffer.Bytes()
+
+	base64Str := base64.StdEncoding.EncodeToString(imgData)
+	return base64Str, nil
+}
+
+// func GenerateQRCodeBase64(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) (string, error) {
+// 	// Convert struct to JSON
+// 	dataJSON, err := json.Marshal(dataparkiran)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to marshal JSON: %v", err)
+// 	}
+
+// 	// Encode JSON as base64
+// 	encodedJSON := base64.StdEncoding.EncodeToString(dataJSON)
+
+//     // Ensure the dataJSON is valid UTF-8 encoded
+//     if !utf8.Valid(dataJSON) {
+//         return "", fmt.Errorf("data contains invalid UTF-8 characters")
+//     }
+
+//      // Generate QR code
+// 	 qrCode, err := qrcode.Encode(encodedJSON, qrcode.Medium, 256)
+// 	 if err != nil {
+// 		 return "", fmt.Errorf("failed to generate QR code: %v", err)
+// 	 }
+
+//     // Create an image from the QR code
+//     qrImage, err := imaging.Decode(bytes.NewReader(qrCode))
+//     if err != nil {
+//         return "", fmt.Errorf("failed to decode QR code image: %v", err)
+//     }
+
+//     // Convert the final image to base64
+//     finalImageBase64, err := ImageToBase64(fileName)
+//     if err != nil {
+//         return "", fmt.Errorf("failed to convert final image to base64: %v", err)
+//     }
+
+//     // Insert Parkiran data into MongoDB
+//     err = InsertParkiran(mconn, collparkiran, dataparkiran)
+//     if err != nil {
+//         return "", fmt.Errorf("failed to insert Parkiran data to MongoDB: %v", err)
+//     }
+
+//     // Update data Parkiran dengan gambar Base64
+//     update := bson.D{{Key: "$set", Value: bson.D{
+//         {Key: "base64Image", Value: finalImageBase64},
+//     }}}
+//     _, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
+//     if err != nil {
+//         return "", fmt.Errorf("gagal memperbarui data Parkiran dengan gambar Base64: %v", err)
+//     }
+
+//     return fileName, nil
+// }
 
 
 // <---FUNCTION GENERATE FOR PARKIRANID --->
