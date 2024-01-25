@@ -69,9 +69,9 @@ func TestGFCPostHandlerUser(t *testing.T) {
 func TestParkiran(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var parkirandata Parkiran
-	parkirandata.Parkiranid = "D41214020"
-	parkirandata.Nama = "Farhan Rizki Maulana"
-	parkirandata.NPM = "1214020"
+	parkirandata.Parkiranid = "D41214006"
+	parkirandata.Nama = "Syafa"
+	parkirandata.NPM = "1214006"
 	parkirandata.Prodi = "D4 Teknik Informatika"
 	parkirandata.NamaKendaraan = "Supra X 125"
 	parkirandata.NomorKendaraan = "F 1234 NR"

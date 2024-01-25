@@ -184,35 +184,35 @@ func GenerateQRCodeLogoBase64(mconn *mongo.Database, collparkiran string, datapa
 	}
 
 	// Convert the final image to base64
-	finalImageBase64, err := ImageToBase64(fileName)
-	if err != nil {
-		return "", fmt.Errorf("failed to convert final image to base64: %v", err)
-	}
+    finalImageBase64, err := ImageToBase64(fileName)
+    if err != nil {
+        return "", fmt.Errorf("failed to convert final image to base64: %v", err)
+    }
 
-	// Insert Parkiran data into MongoDB
-	err = InsertParkiran(mconn, collparkiran, dataparkiran)
-	if err != nil {
-		return "", fmt.Errorf("failed to insert Parkiran data to MongoDB: %v", err)
-	}
+    // Insert Parkiran data into MongoDB
+    err = InsertParkiran(mconn, collparkiran, dataparkiran)
+    if err != nil {
+        return "", fmt.Errorf("failed to insert Parkiran data to MongoDB: %v", err)
+    }
 
-	// Update data Parkiran dengan gambar Base64
-	update := bson.D{{Key: "$set", Value: bson.D{
-		{Key: "base64Image", Value: finalImageBase64},
-		{Key: "logoBase64", Value: logoBase64},
-	}}}
-	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
-	if err != nil {
-		return "", fmt.Errorf("gagal memperbarui data Parkiran dengan gambar Base64: %v", err)
-	}
+    // Update data Parkiran dengan gambar Base64
+    update := bson.D{{Key: "$set", Value: bson.D{
+        {Key: "base64Image", Value: finalImageBase64},
+        {Key: "logoBase64", Value: logoBase64},
+    }}}
+    _, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
+    if err != nil {
+        return "", fmt.Errorf("gagal memperbarui data Parkiran dengan gambar Base64: %v", err)
+    }
 
-	// Generate gambar dari data base64
-	imageFileName := filepath.Join("qrcode", fmt.Sprintf("%s_imageQrCode.png", dataparkiran.Parkiranid))
-	_, err = GenerateImageFromBase64(finalImageBase64, imageFileName)
-	if err != nil {
-		return "", fmt.Errorf("gagal menghasilkan gambar dari data base64: %v", err)
-	}
+    // // Generate gambar dari data base64
+    // imageFileName := filepath.Join("qrcode", fmt.Sprintf("%s_imageQrCode.png", dataparkiran.Parkiranid))
+    // _, err = GenerateImageFromBase64(finalImageBase64, imageFileName)
+    // if err != nil {
+    //     return "", fmt.Errorf("gagal menghasilkan gambar dari data base64: %v", err)
+    // }
 
-	return fileName, nil
+    return fileName, nil
 }
 
 // <---FUNCTION GENERATE FOR PARKIRANID --->
