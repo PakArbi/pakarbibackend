@@ -377,7 +377,7 @@ func LoginAdmin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname 
 // 	return GCFReturnStruct(response)
 // }
 
-func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+func GCFInsertParkiranNPM(PublicKey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
@@ -389,7 +389,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	}
 
 	// Process the request with the "Login" token
-	checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+	checktoken := watoken.DecodeGetId(os.Getenv(PublicKey), gettoken)
 	if checktoken == "" {
 		response.Message = "Kamu kayaknya belum punya akun"
 		return GCFReturnStruct(response)
@@ -426,7 +426,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 	return GCFReturnStruct(response)
 }
 
-func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+func GCFInsertParkiranEmail(PublicKey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
@@ -438,7 +438,7 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 	}
 
 	// Process the request with the "Login" token
-	checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+	checktoken := watoken.DecodeGetId(os.Getenv(PublicKey), gettoken)
 	if checktoken == "" {
 		response.Message = "Kamu kayaknya belum punya akun"
 		return GCFReturnStruct(response)
