@@ -474,7 +474,7 @@ func GCFInsertParkiranEmail(PublicKey, MONGOCONNSTRINGENV, dbname, colluser, col
 
 
 // GCF untuk Generate Code QR
-func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+func GCFGenerateQR(PublicKey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
@@ -486,7 +486,7 @@ func GCFGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran
 	}
 
 	// Process the request with the "Login" token
-	checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+	checktoken := watoken.DecodeGetId(os.Getenv(PublicKey), gettoken)
 	if checktoken == "" {
 		response.Message = "Kamu kayaknya belum punya akun"
 		return GCFReturnStruct(response)
