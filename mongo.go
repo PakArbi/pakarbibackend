@@ -274,9 +274,15 @@ func GetParkiranById(mconn *mongo.Database, collectionname, parkiranID string) (
 }
 
 // function Parkiran
-func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKendaraan, nomorKendaraan, jenisKendaraan, statusMessage, waktuMasuk, waktuKeluar string) (InsertedID interface{}) {
+func InsertDataParkir(MongoConn *mongo.Database, npm, nama, prodi, namaKendaraan, nomorKendaraan, jenisKendaraan, statusMessage, waktuMasuk, waktuKeluar, option string) (InsertedID interface{}) {
 	// Generate Parkiran ID
-	parkiranID := GenerateParkiranID(npm)
+	parkiranID, err := GenerateParkiranID(npm, option)
+	if err != nil {
+		// Handle the error, e.g., return an error response or log it
+		fmt.Printf("Error generating Parkiran ID: %v\n", err)
+		return nil
+	}
+
 	req := Parkiran{
 		Parkiranid:     parkiranID,
 		Nama:           nama,
@@ -286,5 +292,6 @@ func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKe
 		NomorKendaraan: nomorKendaraan,
 		JenisKendaraan: jenisKendaraan,
 	}
+
 	return InsertOneDoc(MongoConn, "user", req)
 }

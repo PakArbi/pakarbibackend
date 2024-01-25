@@ -45,7 +45,6 @@ type Parkiran struct {
 	JamMasuk       string             `json:"jammasuk, omitempty" bson:"jammasuk,omitempty"`
 	JamKeluar      string             `json:"jamkeluar, omitempty" bson:"jamkeluar,omitempty"`
 	Base64Image    string 			  `json:"base64image,omitempty" bson:"base64image,omitempty"`
-	LogoBase64     string             `json:"logobase64,omitempty" bson:"logobase64,omitempty"`
 }
 
 type RequestParkiran struct {

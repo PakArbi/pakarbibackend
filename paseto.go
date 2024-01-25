@@ -212,9 +212,7 @@ func GCFInsertParkiranNPM(publickey, MONGOCONNSTRINGENV, dbname, colluser, collp
 				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
-				} else {
-					// Menggunakan GenerateParkiranID untuk mendapatkan Parkiran ID
-					dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
+				} else {					
 
 					insertParkiran(mconn, collparkiran, Parkiran{
 						Parkiranid:     dataparkiran.Parkiranid,
@@ -258,8 +256,6 @@ func GCFInsertParkiranEmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, col
 				if err != nil {
 					response.Message = "Error parsing application/json: " + err.Error()
 				} else {
-					// Menggunakan GenerateParkiranID untuk mendapatkan Parkiran ID
-					dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
 
 					insertParkiran(mconn, collparkiran, Parkiran{
 						Parkiranid:     dataparkiran.Parkiranid,
@@ -312,7 +308,12 @@ func GCFGenerateCodeQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpark
                     response.Message = "Error parsing application/json: " + err.Error()
                 } else {
                     // Generate Parkiran ID
-                    dataparkiran.Parkiranid = GenerateParkiranID(user.NPM)
+                    parkiranID, err := GenerateParkiranID(npm, option)
+					if err != nil {
+						// Handle the error, e.g., return an error response or log it
+						fmt.Printf("Error generating Parkiran ID: %v\n", err)
+						return nil
+					}
 
                     // Insert Parkiran data
                     insertParkiran(mconn, collparkiran, Parkiran{
@@ -326,12 +327,10 @@ func GCFGenerateCodeQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpark
                         Status:         dataparkiran.Status,
                         JamMasuk:       dataparkiran.JamMasuk,
                         JamKeluar:      dataparkiran.JamKeluar,
-                        Base64Image:    dataparkiran.Base64Image,
-                        LogoBase64:     dataparkiran.LogoBase64,
                     })
 
                     // Generate QR code with logo and base64 encoding
-                    _, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
+                    _, err := GenerateQRCodeBase64(mconn, collparkiran, dataparkiran)
                     if err != nil {
                         response.Message = "Error generating QR code: " + err.Error()
                     } else {
@@ -385,7 +384,7 @@ func GCFGenerateQRCode(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpark
                        
                     })
                     // Generate QR code with logo and base64 encoding
-                    _, err := GenerateQRCodeLogoBase64(mconn, collparkiran, dataparkiran)
+                    _, err := GenerateQRCodeBase64(mconn, collparkiran, dataparkiran)
                     if err != nil {
                         response.Message = "Error generating QR code: " + err.Error()
                     } else {
@@ -635,7 +634,7 @@ func GCFGetAllParkiranID(MONGOCONNSTRINGENV, dbname, collectionname string, r *h
 	}
 
 	// Generate Parkiran ID using the provided NPM
-	dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
+	
 
 	parkiran := GetAllParkiranID(mconn, collectionname, dataparkiran)
 	if parkiran.Parkiranid != "" {
@@ -653,8 +652,8 @@ func GCFGetOneParkiran(MONGOCONNSTRINGENV, dbname, collectionname string, r *htt
 	if err != nil {
 		return GCFReturnStruct(CreateResponse(false, "Failed to decode request body", nil))
 	}
-	// Generate Parkiran ID using the provided NPM
-	dataparkiran.Parkiranid = GenerateParkiranID(dataparkiran.NPM)
+
+	
 	// Assuming you have a function to retrieve parkiran by ID, NPM, and Nama Mahasiswa
 	parkiran := GetOneParkiranData(mconn, collectionname, dataparkiran.Parkiranid)  // Perubahan pada argumen pemanggilan
 
