@@ -14,12 +14,12 @@ import (
 
 func TestCreateNewUserRole(t *testing.T) {
 	var userdata User
-	userdata.UsernameId = "D4TI1214001"
-	userdata.Username = "pakarbi2"
-	userdata.NPM = "1214001"
-	userdata.Password = "pakarbipass"
-	userdata.PasswordHash = "pakarbipass"
-	userdata.Email = "1214001@std.ulbi.ac.id"
+	userdata.UsernameId = "D4TI1214005"
+	userdata.Username = "Gita"
+	userdata.NPM = "1214005"
+	userdata.Password = "cantiks"
+	userdata.PasswordHash = "cantiks"
+	userdata.Email = "1214005@std.ulbi.ac.id"
 	userdata.Role = "user"
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	CreateNewUserRole(mconn, "user", userdata)
@@ -28,18 +28,18 @@ func TestCreateNewUserRole(t *testing.T) {
 // func TestDeleteUser(t *testing.T) {
 // 	mconn := SetConnection("MONGOSTRING", "pasabarapk")
 // 	var userdata User
-// 	userdata.Email = "1214001@std.ulbi.ac.id"
+// 	userdata.Email = "1214005@std.ulbi.ac.id"
 // 	DeleteUser(mconn, "user", userdata)
 // }
 
 func CreateNewUserToken(t *testing.T) {
 	var userdata User
-	userdata.UsernameId = "D4TI1214001"
-	userdata.Username = "pakarbi2"
-	userdata.NPM = "1214001"
-	userdata.Password = "pakarbipass"
-	userdata.PasswordHash = "pakarbipass"
-	userdata.Email = "1214001@std.ulbi.ac.id"
+	userdata.UsernameId = "D4TI1214005"
+	userdata.Username = "Gita"
+	userdata.NPM = "1214005"
+	userdata.Password = "cantiks"
+	userdata.PasswordHash = "cantiks"
+	userdata.Email = "1214005@std.ulbi.ac.id"
 	userdata.Role = "user"
 
 	// Create a MongoDB connection
@@ -56,12 +56,12 @@ func CreateNewUserToken(t *testing.T) {
 func TestGFCPostHandlerUser(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.UsernameId = "D4TI1214001"
-	userdata.Username = "pakarbi2"
-	userdata.NPM = "1214001"
-	userdata.Password = "pakarbipass"
-	userdata.PasswordHash = "pakarbipass"
-	userdata.Email = "1214001@std.ulbi.ac.id"
+	userdata.UsernameId = "D4TI1214005"
+	userdata.Username = "Gita"
+	userdata.NPM = "1214005"
+	userdata.Password = "cantiks"
+	userdata.PasswordHash = "cantiks"
+	userdata.Email = "1214005@std.ulbi.ac.id"
 	userdata.Role = "user"
 	CreateNewUserRole(mconn, "user", userdata)
 }
@@ -86,7 +86,7 @@ func TestAllParkiran(t *testing.T) {
 }
 
 func TestGeneratePasswordHash(t *testing.T) {
-	passwordhash := "pakarbipass"
+	passwordhash := "cantiks"
 	hash, _ := HashPass(passwordhash) // ignore error for the sake of simplicity
 
 	fmt.Println("Password:", passwordhash)
@@ -98,15 +98,15 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
 	fmt.Println(privateKey)
 	fmt.Println(publicKey)
-	hasil, err := watoken.Encode("pakarbipass", privateKey)
+	hasil, err := watoken.Encode("cantiks", privateKey)
 	fmt.Println(hasil, err)
 }
 
 func TestHashFunction(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.NPM = "1214001"
-	userdata.PasswordHash = "pakarbipass"
+	userdata.NPM = "1214005"
+	userdata.PasswordHash = "cantiks"
 
 	filter := bson.M{"npm": userdata.NPM}
 	res := atdb.GetOneDoc[User](mconn, "user", filter)
@@ -121,8 +121,8 @@ func TestHashFunction(t *testing.T) {
 func TestIsPasswordValid(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.NPM = "1214001"
-	userdata.PasswordHash = "pakarbipass"
+	userdata.NPM = "1214005"
+	userdata.PasswordHash = "cantiks"
 
 	anu := IsPasswordValidNPM(mconn, "user", userdata)
 	fmt.Println(anu)
@@ -131,12 +131,12 @@ func TestIsPasswordValid(t *testing.T) {
 func TestUserFix(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.UsernameId = "D4TI1214001"
-	userdata.Username = "pakarbi2"
-	userdata.NPM = "1214001"
-	userdata.Password = "pakarbipass"
-	userdata.PasswordHash = "pakarbipass"
-	userdata.Email = "1214001@std.ulbi.ac.id"
+	userdata.UsernameId = "D4TI1214005"
+	userdata.Username = "Gita"
+	userdata.NPM = "1214005"
+	userdata.Password = "cantiks"
+	userdata.PasswordHash = "cantiks"
+	userdata.Email = "1214005@std.ulbi.ac.id"
 	userdata.Role = "user"
 	CreateUser(mconn, "user", userdata)
 }
@@ -164,123 +164,48 @@ func TestGeneratePrivateKeyPasetoAdmin(t *testing.T) {
 func TestLoginn(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.NPM = "1214001"
-	userdata.PasswordHash = "pakarbipass"
+	userdata.NPM = "1214005"
+	userdata.PasswordHash = "cantiks"
 	IsPasswordValidNPM(mconn, "user", userdata)
 	fmt.Println(userdata)
 }
 
-//proses untuk generate code qr
-// func TestGenerateQRCodeWithLogo(t *testing.T) {
-//     // Initialize your MongoDB connection here
-//     mconn := SetConnection("MONGOSTRING", "PakArbiApp")
-
-//     // Initialize a sample Parkiran struct for testing
-//     dataparkiran := Parkiran{
-//         Parkiranid:     "D3/D412345", // Use the same value as in the expectation
-//         Nama:           "John Doe",
-//         NPM:            "12345",     //
-//         Prodi:          "Computer Science",
-//         NamaKendaraan:  "Car",
-//         NomorKendaraan: "AB 1234 CD",
-//         JenisKendaraan: "Sedan",
-//         Status: Status{
-//             Message:    "sudah masuk Parkir",
-//             WaktuMasuk: time.Now().Format(time.RFC3339),
-//         },
-//     }
-
-//     fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
-//     if err != nil {
-//         t.Errorf("Error generating QR code: %v", err)
-//         return
-//     }
-
-//     if fileName != "qrcode/D3/D412345_qrcode.png" {
-//         t.Errorf("Expected file name 'qrcode/D3/D412345_qrcode.png', got '%s'", fileName)
-//         return
-//     }
-
-//     t.Log("Berhasil generate code qr")
-// }
-
-// func TestGenerateQRCodeWithLogo(t *testing.T) {
-//     // Set up your MongoDB connection
-//     mconn := SetConnection("MONGOSTRING", "PakArbiApp")
-
-//     // Set up a sample Parkiran struct for testing
-//     dataparkiran := Parkiran{
-//         Parkiranid:     "D31214000",
-//         Nama:           "John Doe",
-//         NPM:            "12345",
-//         Prodi:          "Computer Science",
-//         NamaKendaraan:  "Car",
-//         NomorKendaraan: "AB 1234 CD",
-//         JenisKendaraan: "Sedan",
-//         Status: Status{
-//             Message:    "sudah masuk Parkir",
-//             WaktuMasuk: time.Now().Format(time.RFC3339),
-//         },
-//     }
-
-//     // Generate QR code with logo
-//     fileName, err := GenerateQRCodeWithLogo(mconn, dataparkiran)
-//     if err != nil {
-//         t.Errorf("Error generating QR code: %v", err)
-//         return
-//     }
-
-//     // Check if the generated file exists
-//     if _, err := os.Stat(fileName); os.IsNotExist(err) {
-//         t.Errorf("Expected file '%s' not found", fileName)
-//         return
-//     }
-
-//     // Check if the file name follows the expected pattern
-//     expectedFileName := filepath.Base(dataparkiran.Parkiranid + "_logo_ulbi_qrcode.png")
-//     if fileName != expectedFileName {
-//         t.Errorf("Expected file name '%s', got '%s'", expectedFileName, fileName)
-//         return
-//     }
-
-//     t.Log("Successfully generated QR code with logo")
-// }
-
 func TestInsertQRCodeDataToMongoDB(t *testing.T) {
-	// Set up your MongoDB connection
-	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
+    // Set up your MongoDB connection
+    mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 
-	// Set up a sample Parkiran struct for testing
-	dataparkiran := Parkiran{
-		Parkiranid:     "D41214001",
-		Nama:           "ULBI2024",
-		NPM:            "1214001",
-		Prodi:          "Computer Science",
-		NamaKendaraan:  "Honda",
-		NomorKendaraan: "AB 1234 CD",
-		JenisKendaraan: "Motor",
-	}
+    // Set up a sample Parkiran struct for testing
+    dataparkiran := Parkiran{
+        Parkiranid:     "D41214005",
+        Nama:           "Gita",
+        NPM:            "1214005",
+        Prodi:          "Sistem Informasi",
+        NamaKendaraan:  "Suzuki",
+        NomorKendaraan: "F 1234 GT",
+        JenisKendaraan: "Motor",
+    }
 
-	// Generate QR code with logo and insert into MongoDB
-	fileName, err := GenerateQRCodeLogoBase64(mconn, "parkiran", dataparkiran)
-	if err != nil {
-		t.Errorf("Error generating QR code with logo: %v", err)
-		return
-	}
+    // Generate QR code with logo and insert into MongoDB
+    fileName, err := GenerateQRCodeLogoBase64(mconn, "parkiran", dataparkiran)
+    if err != nil {
+        t.Errorf("Error generating QR code with logo: %v", err)
+        return
+    }
 
-	// Read the QR code file
-	qrCodeData, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		t.Errorf("Error reading QR code file: %v", err)
-		return
-	}
+    // Read the QR code file
+    qrCodeData, err := ioutil.ReadFile(fileName)
+    if err != nil {
+        t.Errorf("Error reading QR code file: %v", err)
+        return
+    }
 
-	// Insert QR code data into MongoDB
-	err = InsertQRCodeDataToMongoDB(mconn, "qrcodes", dataparkiran.Parkiranid, qrCodeData)
-	if err != nil {
-		t.Errorf("Error inserting QR code data to MongoDB: %v", err)
-		return
-	}
+    // Insert QR code data into MongoDB using the correct function
+    err = InsertQRCodeDataToMongoDB(mconn, dataparkiran.Parkiranid, qrCodeData)
+    if err != nil {
+        t.Errorf("Error inserting QR code data to MongoDB: %v", err)
+        return
+    }
 
-	t.Log("Successfully generated QR code with logo and inserted data into MongoDB")
+    t.Log("Successfully generated QR code with logo and inserted data into MongoDB")
 }
+

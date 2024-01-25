@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 	"encoding/base64"
 
 
@@ -56,10 +55,37 @@ func InsertOneDoc(db *mongo.Database, collection string, doc interface{}) (inser
 	return insertResult.InsertedID
 }
 
-// func untuk update status auto
-func UpdateStatusInMongoDB(mconn *mongo.Database, collname, parkiranID string, updatedStatus Status) error {
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "status", Value: updatedStatus}}}}
-	_, err := mconn.Collection(collname).UpdateOne(context.TODO(), bson.M{"parkiranid": parkiranID}, update)
+func InsertQRCodeDataToMongoDB(mconn *mongo.Database, parkiranID string, qrCodeData []byte) error {
+    // Encode QR code data as Base64
+    qrCodeBase64 := base64.StdEncoding.EncodeToString(qrCodeData)
+
+    // Decode the Base64 data to ensure correctness
+    _, err := base64.StdEncoding.DecodeString(qrCodeBase64)
+    if err != nil {
+        return fmt.Errorf("failed to decode Base64 data: %v", err)
+    }
+
+    // Update Parkiran document with QR code data
+    filter := bson.M{"parkiranid": parkiranID}
+    update := bson.D{
+        {"$set", bson.D{
+            {"base64image", qrCodeBase64},
+            {"logobase64", qrCodeBase64}, // Assuming logo data is also included in qrCodeData
+        }},
+    }
+
+    _, err = mconn.Collection("parkiran").UpdateOne(context.TODO(), filter, update)
+    if err != nil {
+        return fmt.Errorf("failed to update Parkiran document: %v", err)
+    }
+
+    return nil
+}
+
+
+// InsertParkiran untuk menyimpan data ke mongodb collection parkiran
+func InsertParkiran(mconn *mongo.Database, collparkiran string, parkiran Parkiran) error {
+	_, err := mconn.Collection(collparkiran).InsertOne(context.TODO(), parkiran)
 	return err
 }
 
@@ -81,51 +107,6 @@ func GetQRCodeDataFromMongoDB(mconn *mongo.Database, collname, parkiranID string
 	}
 
 	return base64Image, nil
-}
-func ScanQRCode(mconn *mongo.Database, collparkiran, qrcodeData string) (ScanResult, error) {
-	var result ScanResult
-
-	// Decode QR code data
-	qrCodeBytes, err := base64.StdEncoding.DecodeString(qrcodeData)
-	if err != nil {
-		return result, fmt.Errorf("failed to decode QR code data: %v", err)
-	}
-
-	// Convert QR code data to string
-	qrCodeString := string(qrCodeBytes)
-
-	// Find Parkiran entry by QR code data
-	var parkiran Parkiran
-	err = mconn.Collection(collparkiran).FindOne(context.TODO(), bson.M{"qrcode.base64image": qrCodeString}).Decode(&parkiran)
-	if err != nil {
-		return result, fmt.Errorf("failed to find Parkiran by QR code: %v", err)
-	}
-
-	// Check if the entry timestamp is available
-	if parkiran.Status.DataParkir.WaktuMasuk != "" {
-		waktuMasuk, err := time.Parse(time.RFC3339, parkiran.Status.DataParkir.WaktuMasuk)
-		if err != nil {
-			return result, fmt.Errorf("failed to parse entry timestamp: %v", err)
-		}
-		result.WaktuMasuk = waktuMasuk
-	}
-
-	// Update data Parkiran with timestamp for waktu keluar
-	currentTime := time.Now()
-	update := bson.D{
-		{Key: "$set", Value: bson.D{
-			{Key: "status.dataparkir.waktukeluar", Value: currentTime.Format(time.RFC3339)},
-		}},
-	}
-	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": parkiran.Parkiranid}, update)
-	if err != nil {
-		return result, fmt.Errorf("failed to update data Parkiran with timestamp for waktu keluar: %v", err)
-	}
-
-	result.Message = "QR code scanned successfully"
-	result.WaktuKeluar = currentTime
-
-	return result, nil
 }
 
 // <--- FUNCTION USER --->
@@ -257,6 +238,27 @@ func GetOneParkiranData(mongoconn *mongo.Database, colname, Pkrid string) (dest 
 	return
 }
 
+func GetOneParkiran(mconn *mongo.Database, collectionname, parkiranID, npm string) (Parkiran, error) {
+	collection := mconn.Collection(collectionname)
+
+	var result Parkiran
+	filter := bson.D{{Key: "parkiranid", Value: parkiranID}, {Key: "npm", Value: npm}}
+
+	err := collection.FindOne(context.Background(), filter).Decode(&result)
+	if err != nil {
+		return Parkiran{}, err
+	}
+
+	return result, nil
+}
+
+func GetOneParkiranByNPM(mconn *mongo.Database, collectionname, parkiranID, npm string) (Parkiran, error) {
+	lastDigits := GetLastDigitsNPM(npm)
+	parkiranIDWithNPM := "D3/D4" + lastDigits
+
+	return GetOneParkiran(mconn, collectionname, parkiranID, parkiranIDWithNPM)
+}
+
 func GetParkiranById(mconn *mongo.Database, collectionname, parkiranID string) (Parkiran, error) {
 	collection := mconn.Collection(collectionname)
 
@@ -285,52 +287,4 @@ func InsertDataParkir(MongoConn *mongo.Database, npm string, nama, prodi, namaKe
 		JenisKendaraan: jenisKendaraan,
 	}
 	return InsertOneDoc(MongoConn, "user", req)
-}
-
-// fungi untuk mengurutkan id
-func SequenceAutoIncrement(mongoconn *mongo.Database, sequenceName string) int {
-	// Membuat filter untuk mencari dokumen dengan _id sesuai sequenceName
-	filter := bson.M{"_id": sequenceName}
-	
-	// Membuat update untuk menambahkan nilai sequence
-	update := bson.M{"$inc": bson.M{"seq": 1}}
-
-	// Membuat variabel untuk menyimpan hasil sequence
-	var result struct {
-		Seq int `bson:"seq"`
-	}
-
-	// Membuat opsi untuk mengembalikan dokumen setelah update
-	after := options.After
-	opt := &options.FindOneAndUpdateOptions{
-		ReturnDocument: &after,
-	}
-
-	// Mengambil koleksi untuk sequence dari database dan melakukan operasi FindOneAndUpdate
-	collection := mongoconn.Collection("counters")
-	err := collection.FindOneAndUpdate(context.TODO(), filter, update, opt).Decode(&result)
-	if err != nil {
-		// Menghandle kesalahan jika terjadi
-	}
-
-	// Mengembalikan nilai sequence yang telah diincrement
-	return result.Seq
-}
-
-func CreateParkiranNomor(mongoconn *mongo.Database, sequenceName string, parkiran Parkiran) error {
-	// Mendapatkan nilai sequence berikutnya
-	nextSequence := SequenceAutoIncrement(mongoconn, sequenceName)
-
-	// Menetapkan nilai Nomor pada struktur data Parkiran
-	parkiran.Nomor = &nextSequence
-
-	// Menyisipkan data Parkiran ke dalam database
-	_, err := mongoconn.Collection("parkiran").InsertOne(context.TODO(), parkiran)
-	if err != nil {
-		// Mengembalikan kesalahan jika gagal menyisipkan data Parkiran
-		return fmt.Errorf("gagal menyisipkan data Parkiran: %v", err)
-	}
-
-	// Mengembalikan nilai-nilai tanpa kesalahan jika berhasil
-	return nil
 }

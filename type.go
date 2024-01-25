@@ -34,7 +34,6 @@ type Admin struct {
 
 type Parkiran struct {
 	ID             primitive.ObjectID `bson:"_id,omitempty" `
-	Nomor          *int                `json:"nomor,omitempty" bson:"nomor,omitempty"`
 	Parkiranid     string             `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
 	Nama           string             `json:"nama,omitempty" bson:"nama,omitempty"`
 	NPM            string             `json:"npm,omitempty" bson:"npm,omitempty"`
@@ -42,40 +41,16 @@ type Parkiran struct {
 	NamaKendaraan  string             `json:"namakendaraan,omitempty" bson:"namakendaraan,omitempty"`
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
-	Status         Status             `json:"status, omitempty" bson:"status,omitempty"`
-	QRCode         QRCode             `json:"qrcode" bson:"qrcode"`
-}
-
-type DataParkir struct {
-	WaktuMasuk  string `json:"waktumasuk,omitempty" bson:"waktumasuk,omitempty"`
-	WaktuKeluar string `json:"waktukeluar,omitempty" bson:"waktukeluar,omitempty"`
-}
-
-type Status struct {
-	Status          string          `json:"status,omitempty" bson:"status,omitempty"`
-	Message         string          `json:"message,omitempty" bson:"message,omitempty"`
-	DataParkir      DataParkir     `json:"dataparkir,omitempty" bson:"dataparkir,omitempty"`
-	RequestParkiran RequestParkiran `json:"requestparkiran,omitempty" bson:"requestparkiran,omitempty"`
+	Status         string             `json:"status, omitempty" bson:"status,omitempty"`
+	JamMasuk       string             `json:"status, omitempty" bson:"status,omitempty"`
+	JamKeluar      string             `json:"status, omitempty" bson:"status,omitempty"`
+	Base64Image    string 			  `json:"base64image,omitempty" bson:"base64image,omitempty"`
+	LogoBase64     string             `json:"logobase64,omitempty" bson:"logobase64,omitempty"`
 }
 
 type RequestParkiran struct {
 	Parkiranid string `json:"parkiranid"`
-}
-
-type QRCode struct {
-	Base64Image string `json:"base64image,omitempty" bson:"base64image,omitempty"`
-	LogoBase64  string `json:"logobase64,omitempty" bson:"logobase64,omitempty"`
-}
-
-type ScanResult struct {
-	Message   string    `json:"message,omitempty"`
-	WaktuMasuk time.Time `json:"waktumasuk,omitempty"`
-	WaktuKeluar time.Time `json:"waktukeluar,omitempty"`
-}
-
-type Sequence struct {
-	ID  string `bson:"_id,omitempty"`
-	Seq int    `bson:"seq,omitempty"`
+	NPM        string `json:"npm"`
 }
 
 type Credential struct {
@@ -90,8 +65,6 @@ type Response struct {
 	Message string      `json:"message" bson:"message"`
 	Data    interface{} `json:"data" bson:"data"`
 }
-
-
 
 type ResponseParkiran struct {
 	Status  bool     `json:"status"`
