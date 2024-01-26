@@ -517,18 +517,17 @@ func GetOneData(mongoconn *mongo.Database, collection string, parkirandata Parki
 	return atdb.GetOneDoc[Parkiran](mongoconn, collection, filter)
 }
 
-func GetAllParkiranID(mongoconn *mongo.Database, collection string, parkirandata Parkiran) Parkiran {
-	filter := bson.M{
-		"parkiranid":     parkirandata.Parkiranid,
-		"nama":           parkirandata.Nama,
-		"npm":            parkirandata.NPM,
-		"prodi":          parkirandata.Prodi,
-		"namakendaraan":  parkirandata.NamaKendaraan,
-		"nomorkendaraan": parkirandata.NomorKendaraan,
-		"jeniskendaraan": parkirandata.JenisKendaraan,
-		"jammasuk":       parkirandata.JamMasuk,
-		"jamkeluar":      parkirandata.JamKeluar,
+// GetOneDataParkiranByID mengambil satu data parkiran dari MongoDB berdasarkan parkiranID
+func GetOneDataParkiranByID(mconn *mongo.Database, collparkiran, parkiranID string) (*Parkiran, error) {
+	var result Parkiran
+
+	err := mconn.Collection(collparkiran).FindOne(context.TODO(), bson.M{"parkiranid": parkiranID}).Decode(&result)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, fmt.Errorf("parkiran data not found")
+		}
+		return nil, fmt.Errorf("failed to get parkiran data: %v", err)
 	}
-	parkiranID := atdb.GetOneDoc[Parkiran](mongoconn, collection, filter)
-	return parkiranID
+
+	return &result, nil
 }
