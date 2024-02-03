@@ -58,12 +58,14 @@ type Credential struct {
 	Message string     `json:"message,omitempty" bson:"message,omitempty"`
 	// Data    string     `json:"data,omitempty" bson:"data,omitempty"`
 	Data1   []Parkiran `bson:"data,omitempty" json:"data,omitempty"`
+	Base64Image string     `json:"base64Image,omitempty" bson:"base64Image,omitempty"`
 }
 
 type Response struct {
 	Status  bool        `json:"status" bson:"status"`
 	Message string      `json:"message" bson:"message"`
 	Data    interface{} `json:"data" bson:"data"`
+	Base64Image string     `json:"base64image,omitempty" bson:"base64image,omitempty"`
 }
 
 type ResponseParkiran struct {

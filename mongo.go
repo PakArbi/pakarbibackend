@@ -295,3 +295,54 @@ func InsertDataParkir(MongoConn *mongo.Database, npm, nama, prodi, namaKendaraan
 
 	return InsertOneDoc(MongoConn, "user", req)
 }
+
+
+//percobaan updated dan delete alurnya beda
+func updateParkiran(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) Credential {
+    var response Credential
+    filter := bson.M{"parkiranid": dataparkiran.Parkiranid}
+    update := bson.M{"$set": bson.M{
+        "nama":            dataparkiran.Nama,
+        "npm":             dataparkiran.NPM,
+        "prodi":           dataparkiran.Prodi,
+        "namakendaraan":   dataparkiran.NamaKendaraan,
+        "nomorkendaraan":  dataparkiran.NomorKendaraan,
+        "jeniskendaraan":  dataparkiran.JenisKendaraan,
+        "jammasuk":        dataparkiran.JamMasuk,
+        "jamkeluar":       dataparkiran.JamKeluar,
+        "status":          dataparkiran.Status,
+    }}
+
+    result, err := mconn.Collection(collparkiran).UpdateOne(context.Background(), filter, update)
+    if err != nil {
+        fmt.Println("Error updating parkiran:", err)
+        response.Message = "Failed to update parkiran data"
+    } else if result.ModifiedCount > 0 {
+        // Generate QR code without logo and return base64 encoding
+        qrCodeBase64, err := GenerateQRCodeBase64WithoutLogo(dataparkiran, mconn, collparkiran)
+        if err != nil {
+            response.Message = "Error generating QR code: " + err.Error()
+        } else {
+            response.Status = true
+            response.Message = "Berhasil Update Data Parkiran dan Generate QR Code"
+            response.Base64Image = qrCodeBase64
+        }
+    } else {
+        response.Message = "Failed to update parkiran data"
+    }
+
+    return response
+}
+
+
+// DeleteParkiran deletes the parkiran data and associated QR code from the MongoDB collection
+func deleteParkiran(mconn *mongo.Database, collparkiran string, dataparkiran Parkiran) bool {
+	filter := bson.M{"parkiranid": dataparkiran.Parkiranid}
+	result, err := mconn.Collection(collparkiran).DeleteOne(context.Background(), filter)
+	if err != nil {
+		fmt.Println("Error deleting parkiran:", err)
+		return false
+	}
+
+	return result.DeletedCount > 0
+}

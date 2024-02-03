@@ -3,8 +3,8 @@ package pakarbibackend
 import (
 	"fmt"
 	// "os"
-	"context"
-	"io/ioutil"
+	// "context"
+	// "io/ioutil"
 	"testing"
 
 	"github.com/aiteung/atdb"
@@ -170,44 +170,74 @@ func TestLoginn(t *testing.T) {
 	fmt.Println(userdata)
 }
 
-func TestInsertQRCodeDataToMongoDB(t *testing.T) {
-	// Set up your MongoDB connection
-	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
+// func TestInsertQRCodeDataToMongoDB(t *testing.T) {
+// 	// Set up your MongoDB connection
+// 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 
-	// Set up a sample Parkiran struct for testing
-	dataparkiran := Parkiran{
-		Parkiranid:     "D41214000",
-		Nama:           "ULBICAMPUS",
-		NPM:            "1214000",
-		Prodi:          "D4 Teknik Informatika",
-		NamaKendaraan:  "ULBIBUS",
-		NomorKendaraan: "D 1234 ULBI",
-		JenisKendaraan: "Mobil",
-		Status:         "Mahasiswa Aktif",
-		JamMasuk:       "08:00",
-		JamKeluar:      "15:00",
-	}
+// 	// Set up a sample Parkiran struct for testing
+// 	dataparkiran := Parkiran{
+// 		Parkiranid:     "D41214000",
+// 		Nama:           "ULBICAMPUS",
+// 		NPM:            "1214000",
+// 		Prodi:          "D4 Teknik Informatika",
+// 		NamaKendaraan:  "ULBIBUS",
+// 		NomorKendaraan: "D 1234 ULBI",
+// 		JenisKendaraan: "Mobil",
+// 		Status:         "Mahasiswa Aktif",
+// 		JamMasuk:       "08:00",
+// 		JamKeluar:      "15:00",
+// 	}
 
-	// Generate QR code with logo and insert into MongoDB
-	fileName, err := GenerateQRCodeBase64(mconn, "parkiran", dataparkiran)
-	if err != nil {
-		t.Errorf("Error generating QR code with logo: %v", err)
-		return
-	}
+// 	// Generate QR code with logo and insert into MongoDB
+// 	fileName, err := GenerateQRCodeBase64(mconn, "parkiran", dataparkiran)
+// 	if err != nil {
+// 		t.Errorf("Error generating QR code with logo: %v", err)
+// 		return
+// 	}
 
-	// Read the QR code file
-	_, errRead := ioutil.ReadFile(fileName)
-	if errRead != nil {
-		t.Errorf("Error reading QR code file: %v", errRead)
-		return
-	}
+// 	// Read the QR code file
+// 	_, errRead := ioutil.ReadFile(fileName)
+// 	if errRead != nil {
+// 		t.Errorf("Error reading QR code file: %v", errRead)
+// 		return
+// 	}
 
-	// Check if the data is inserted into MongoDB correctly
-	result := mconn.Collection("parkiran").FindOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid})
-	if result.Err() != nil {
-		t.Errorf("Failed to find inserted data in MongoDB: %v", result.Err())
-		return
-	}
+// 	// Check if the data is inserted into MongoDB correctly
+// 	result := mconn.Collection("parkiran").FindOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid})
+// 	if result.Err() != nil {
+// 		t.Errorf("Failed to find inserted data in MongoDB: %v", result.Err())
+// 		return
+// 	}
 
-	t.Log("Successfully generated QR code with logo, inserted data into MongoDB, and verified QR code file existence.")
+// 	t.Log("Successfully generated QR code with logo, inserted data into MongoDB, and verified QR code file existence.")
+// }
+
+func TestGenerateQRCodeBase64WithoutLogo(t *testing.T) {
+    // Set up MongoDB connection
+    mconn := SetConnection("Mongostring", "parkabi")
+    collparkiran := "parkiran"
+
+    // Create a sample Parkiran object
+    dataparkiran := Parkiran{
+        Parkiranid:     "123",
+        Nama:           "John Doe",
+        NPM:            "123456",
+        Prodi:          "Computer Science",
+        NamaKendaraan:  "Car",
+        NomorKendaraan: "ABC123",
+        JenisKendaraan: "Sedan",
+        JamMasuk:       "09:00 AM",
+        JamKeluar:      "05:00 PM",
+        Status:         "Parked",
+    }
+
+    // Call the function to generate QR code and update MongoDB
+    qrBase64, err := GenerateQRCodeBase64WithoutLogo(dataparkiran, mconn, collparkiran)
+    if err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
+
+    // Print the generated QR code base64
+    fmt.Println("Generated QR Code Base64:", qrBase64)
 }

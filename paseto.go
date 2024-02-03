@@ -192,67 +192,168 @@ func LoginAdmin(PASETOPRIVATEKEYENV, MONGOCONNSTRINGENV, dbname, collectionname 
 }
 
 // <---GCF untuk Generate Code QR--->
-func GCFGenerateCodeQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
-	var response Credential
-	response.Status = false
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	var userdata User
-	gettoken := r.Header.Get("Login")
-	if gettoken == "" {
-		response.Message = "Header Login Not Exist"
-	} else {
-		// Process the request with the "Login" token
-		checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
-		if checktoken == "" {
-			response.Message = "Kamu kayaknya belum punya akun"
-		} else {
-			// Mengecek token yang digunakan
-			userdata.NPM = checktoken
-			user := FindUserByField(mconn, colluser, "npm", userdata.NPM)
-			if user.NPM == "" {
-				// Jika tidak menemukan user menggunakan npm, cobain menggunakan email
-				userdata.Email = checktoken
-				user = FindUserByField(mconn, colluser, "email", userdata.Email)
-			}
+//paseto
+func GCFInsertGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+    var response Response
+    response.Status = false
+    mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+    var userdata User
+    gettoken := r.Header.Get("Login")
+    if gettoken == "" {
+        response.Message = "Header Login Not Exist"
+    } else {
+        // Process the request with the "Login" token
+        checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+        if checktoken == "" {
+            response.Message = "Kamu kayaknya belum punya akun"
+        } else {
+            // Mengecek token yang digunakan
+            userdata.NPM = checktoken
+            user := FindUserByField(mconn, colluser, "npm", userdata.NPM)
+            if user.NPM == "" {
+                // Jika tidak menemukan user menggunakan npm, cobain menggunakan email
+                userdata.Email = checktoken
+                user = FindUserByField(mconn, colluser, "email", userdata.Email)
+            }
 
-			if user.Role == "user" {
-				var dataparkiran Parkiran
-				err := json.NewDecoder(r.Body).Decode(&dataparkiran)
-				if err != nil {
-					response.Message = "Error parsing application/json: " + err.Error()
-				} else {
-					// Generate Parkiran ID
-					// Insert Parkiran data
-					insertParkiran(mconn, collparkiran, Parkiran{
-						Parkiranid:     dataparkiran.Parkiranid,
-						Nama:           dataparkiran.Nama,
-						NPM:            dataparkiran.NPM,
-						Prodi:          dataparkiran.Prodi,
-						NamaKendaraan:  dataparkiran.NamaKendaraan,
-						NomorKendaraan: dataparkiran.NomorKendaraan,
-						JenisKendaraan: dataparkiran.JenisKendaraan,
-						Status:         dataparkiran.Status,
-						JamMasuk:       dataparkiran.JamMasuk,
-						JamKeluar:      dataparkiran.JamKeluar,
-					})
+            if user.Role == "user" {
+                var dataparkiran Parkiran
+                err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+                if err != nil {
+                    response.Message = "Error parsing application/json: " + err.Error()
+                } else {
+                    // Generate Parkiran ID
+                    // Insert Parkiran data
+                    insertParkiran(mconn, collparkiran, Parkiran{
+                        Parkiranid:     dataparkiran.Parkiranid,
+                        Nama:           dataparkiran.Nama,
+                        NPM:            dataparkiran.NPM,
+                        Prodi:          dataparkiran.Prodi,
+                        NamaKendaraan:  dataparkiran.NamaKendaraan,
+                        NomorKendaraan: dataparkiran.NomorKendaraan,
+                        JenisKendaraan: dataparkiran.JenisKendaraan,
+                        Status:         dataparkiran.Status,
+                        JamMasuk:       dataparkiran.JamMasuk,
+                        JamKeluar:      dataparkiran.JamKeluar,
+                        Base64Image:    dataparkiran.Base64Image, // Assign the Base64Image field
+                    })
 
-					// Generate QR code with logo and base64 encoding
-					_, err := GenerateQRCodeBase64(mconn, collparkiran, dataparkiran)
-					if err != nil {
-						response.Message = "Error generating QR code: " + err.Error()
-					} else {
-						response.Status = true
-						response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
-					}
-				}
-			} else {
-				response.Message = "Anda tidak dapat Insert data karena bukan user"
-			}
-		}
-	}
-	return GCFReturnStruct(response)
+                    // Generate QR code without logo and return base64 encoding
+                    // Pass mconn and collparkiran as additional parameters
+                    qrCodeBase64, err := GenerateQRCodeBase64WithoutLogo(dataparkiran, mconn, collparkiran)
+                    if err != nil {
+                        response.Message = "Error generating QR code: " + err.Error()
+                    } else {
+                        response.Status = true
+                        response.Message = "Berhasil Insert Data Parkiran dan Generate QR Code"
+                        response.Data = qrCodeBase64 // response Data untuk Base64
+                    }
+                }
+            } else {
+                response.Message = "Anda tidak dapat Insert data karena bukan user"
+            }
+        }
+    }
+    return GCFReturnStruct(response)
 }
 
+
+func GCFGenerateUpdateCodeQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+    var response Credential
+    response.Status = false
+    mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+    var userdata User
+    gettoken := r.Header.Get("Login")
+    if gettoken == "" {
+        response.Message = "Header Login Not Exist"
+    } else {
+        // Process the request with the "Login" token
+        checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+        if checktoken == "" {
+            response.Message = "Kamu kayaknya belum punya akun"
+        } else {
+            // Mengecek token yang digunakan
+            userdata.NPM = checktoken
+            user := FindUserByField(mconn, colluser, "npm", userdata.NPM)
+            if user.NPM == "" {
+                // Jika tidak menemukan user menggunakan npm, cobain menggunakan email
+                userdata.Email = checktoken
+                user = FindUserByField(mconn, colluser, "email", userdata.Email)
+            }
+
+            if user.Role == "user" {
+                var dataparkiran Parkiran
+                err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+                if err != nil {
+                    response.Message = "Error parsing application/json: " + err.Error()
+                } else {
+                    // function updated
+                    updatedResponse := updateParkiran(mconn, collparkiran, dataparkiran)
+                    if updatedResponse.Status {
+                        response.Status = true
+                        response.Message = "Berhasil Update Data Parkiran dan Generate QR Code"
+                        response.Base64Image = updatedResponse.Base64Image
+                    } else {
+                        response.Message = updatedResponse.Message
+                    }
+                }
+            } else {
+                response.Message = "Anda tidak dapat Update data karena bukan user"
+            }
+        }
+    }
+    return GCFReturnStruct(response)
+}
+
+// GCFDeleteGenerateQR deletes the QR code for an existing parkiran entry
+func GCFGenerateDeleteQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
+    var response Credential
+    response.Status = false
+    mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+    var userdata User
+    gettoken := r.Header.Get("Login")
+    if gettoken == "" {
+        response.Message = "Header Login Not Exist"
+    } else {
+        // Process the request with the "Login" token
+        checktoken := watoken.DecodeGetId(os.Getenv(publickey), gettoken)
+        if checktoken == "" {
+            response.Message = "Kamu kayaknya belum punya akun"
+        } else {
+            // Mengecek token yang digunakan
+            userdata.NPM = checktoken
+            user := FindUserByField(mconn, colluser, "npm", userdata.NPM)
+            if user.NPM == "" {
+                // Jika tidak menemukan user menggunakan npm, cobain menggunakan email
+                userdata.Email = checktoken
+                user = FindUserByField(mconn, colluser, "email", userdata.Email)
+            }
+
+            if user.Role == "user" {
+                var dataparkiran Parkiran
+                err := json.NewDecoder(r.Body).Decode(&dataparkiran)
+                if err != nil {
+                    response.Message = "Error parsing application/json: " + err.Error()
+                } else {
+                    // Delete Parkiran data and associated QR code
+                    deleted := deleteParkiran(mconn, collparkiran, dataparkiran)
+                    if deleted {
+                        response.Status = true
+                        response.Message = "Berhasil Delete Data Parkiran dan QR Code"
+                    } else {
+                        response.Message = "Failed to delete parkiran data"
+                    }
+                }
+            } else {
+                response.Message = "Anda tidak dapat Delete data karena bukan user"
+            }
+        }
+    }
+    return GCFReturnStruct(response)
+}
+
+
+//<--function generate code qr 2-->
 func GCFGenerateCodeQREmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 	var response Credential
 	response.Status = false
