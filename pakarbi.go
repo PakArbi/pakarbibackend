@@ -531,3 +531,20 @@ func GetOneDataParkiranByID(mconn *mongo.Database, collparkiran, parkiranID stri
 
 	return &result, nil
 }
+
+func GetParkiranFromID(db *mongo.Database, col string, _id primitive.ObjectID) (*Parkiran, error) {
+	cols := db.Collection(col)
+	filter := bson.M{"_id": _id}
+
+	reportlist := new(Parkiran)
+
+	err := cols.FindOne(context.Background(), filter).Decode(reportlist)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, fmt.Errorf("no data found for ID %s", _id.Hex())
+		}
+		return nil, fmt.Errorf("error retrieving data for ID %s: %s", _id.Hex(), err.Error())
+	}
+
+	return reportlist, nil
+}

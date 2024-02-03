@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/whatsauth/watoken"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // < --- FUNCTION CEK EMAIL --- >
@@ -567,4 +568,39 @@ func GCFGetOneDataParkiran(PublicKey, MongoEnv, dbname, colname, parkiranID stri
 		}
 	}
 	return ReturnStringStruct(req)
+}
+
+func GetIDDataParkiran(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	resp := new(Credential)
+	parkirandata := new(Parkiran)
+	resp.Status = false
+	err := json.NewDecoder(r.Body).Decode(&parkirandata)
+
+	id := r.URL.Query().Get("_id")
+	if id == "" {
+		resp.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(resp)
+	}
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		resp.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(resp)
+	}
+
+	parkirandata.ID = ID
+
+	// Menggunakan fungsi GetProdukFromID untuk mendapatkan data produk berdasarkan ID
+	parkirandata, err = GetParkiranFromID(mconn, collectionname, ID)
+	if err != nil {
+		resp.Message = err.Error()
+		return GCFReturnStruct(resp)
+	}
+
+	resp.Status = true
+	resp.Message = "Get Data Berhasil"
+	resp.Data1 = []Parkiran{*parkirandata}
+
+	return GCFReturnStruct(resp)
 }

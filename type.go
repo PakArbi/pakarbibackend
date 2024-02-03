@@ -33,7 +33,7 @@ type Admin struct {
 }
 
 type Parkiran struct {
-	ID             primitive.ObjectID `bson:"_id,omitempty" `
+	ID             primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Parkiranid     string             `json:"parkiranid,omitempty" bson:"parkiranid,omitempty"`
 	Nama           string             `json:"nama,omitempty" bson:"nama,omitempty"`
 	NPM            string             `json:"npm,omitempty" bson:"npm,omitempty"`
@@ -44,7 +44,7 @@ type Parkiran struct {
 	Status         string             `json:"status, omitempty" bson:"status,omitempty"`
 	JamMasuk       string             `json:"jammasuk, omitempty" bson:"jammasuk,omitempty"`
 	JamKeluar      string             `json:"jamkeluar, omitempty" bson:"jamkeluar,omitempty"`
-	Base64Image    string 			  `json:"base64image,omitempty" bson:"base64image,omitempty"`
+	Base64Image    string             `json:"base64image,omitempty" bson:"base64image,omitempty"`
 }
 
 type RequestParkiran struct {
@@ -53,10 +53,11 @@ type RequestParkiran struct {
 }
 
 type Credential struct {
-	Status  bool   `json:"status" bson:"status"`
-	Token   string `json:"token,omitempty" bson:"token,omitempty"`
-	Message string `json:"message,omitempty" bson:"message,omitempty"`
-	Data    string `json:"data,omitempty" bson:"data,omitempty"`
+	Status  bool       `json:"status" bson:"status"`
+	Token   string     `json:"token,omitempty" bson:"token,omitempty"`
+	Message string     `json:"message,omitempty" bson:"message,omitempty"`
+	Data    string     `json:"data,omitempty" bson:"data,omitempty"`
+	Data1   []Parkiran `bson:"data,omitempty" json:"data,omitempty"`
 }
 
 type Response struct {
