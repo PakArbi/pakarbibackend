@@ -640,7 +640,7 @@ func GCFGenerateDeleteQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpa
 // }
 
 func GCFGetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
-	req := new(Credential)
+	req := new(Response)
 	conn := SetConnection(MongoEnv, dbname)
 	tokenlogin := r.Header.Get("Login")
 	if tokenlogin == "" {
@@ -661,7 +661,7 @@ func GCFGetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.
 			} else {
 				req.Status = true
 				req.Message = "Data Parkiran berhasil diambil"
-				req.Data1 = dataparkiran
+				req.Data = dataparkiran
 			}
 		}
 	}
