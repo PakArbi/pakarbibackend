@@ -368,15 +368,50 @@ func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Req
 			dataparkiran := GetAllParkirans(conn, colname)
 			if dataparkiran == nil {
 				req.Status = false
-				req.Message = "Data User tidak ada"
+				req.Message = "Data Parkiran tidak ada"
 			} else {
 				req.Status = true
-				req.Message = "Data User berhasil diambil"
+				req.Message = "Data Parkiran berhasil diambil"
 				req.Data = dataparkiran
 			}
 		}
 	}
 	return ReturnStringStruct(req)
+}
+
+func GetIDDataParkiran(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	resp := new(Credential)
+	parkirandata := new(Parkiran)
+	resp.Status = false
+	err := json.NewDecoder(r.Body).Decode(&parkirandata)
+
+	id := r.URL.Query().Get("_id")
+	if id == "" {
+		resp.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(resp)
+	}
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		resp.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(resp)
+	}
+
+	parkirandata.ID = ID
+
+	// Menggunakan fungsi GetProdukFromID untuk mendapatkan data produk berdasarkan ID
+	parkirandata, err = GetParkiranFromID(mconn, collectionname, ID)
+	if err != nil {
+		resp.Message = err.Error()
+		return GCFReturnStruct(resp)
+	}
+
+	resp.Status = true
+	resp.Message = "Get Data Berhasil"
+	resp.Data = []Parkiran{*parkirandata}
+
+	return GCFReturnStruct(resp)
 }
 
 // // <--function generate code qr 2-->
@@ -668,66 +703,31 @@ func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Req
 // 	return ReturnStringStruct(req)
 // }
 
-func GCFGetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
-	req := new(Response)
-	conn := SetConnection(MongoEnv, dbname)
-	tokenlogin := r.Header.Get("Login")
-	if tokenlogin == "" {
-		req.Status = false
-		req.Message = "Header Login Not Found"
-	} else {
-		// Dekode token untuk mendapatkan
-		_, err := DecodeGetParkiran(os.Getenv(PublicKey), tokenlogin)
-		if err != nil {
-			req.Status = false
-			req.Message = "Data Tersebut tidak ada" + tokenlogin
-		} else {
-			// Langsung ambil data catalog
-			dataparkiran := GetAllParkiran(conn, colname)
-			if dataparkiran == nil {
-				req.Status = false
-				req.Message = "Data Parkiran tidak ada"
-			} else {
-				req.Status = true
-				req.Message = "Data Parkiran berhasil diambil"
-				req.Data = dataparkiran
-			}
-		}
-	}
-	return ReturnStringStruct(req)
-}
-
-func GetIDDataParkiran(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	resp := new(Credential)
-	parkirandata := new(Parkiran)
-	resp.Status = false
-	err := json.NewDecoder(r.Body).Decode(&parkirandata)
-
-	id := r.URL.Query().Get("_id")
-	if id == "" {
-		resp.Message = "Missing '_id' parameter in the URL"
-		return GCFReturnStruct(resp)
-	}
-
-	ID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		resp.Message = "Invalid '_id' parameter in the URL"
-		return GCFReturnStruct(resp)
-	}
-
-	parkirandata.ID = ID
-
-	// Menggunakan fungsi GetProdukFromID untuk mendapatkan data produk berdasarkan ID
-	parkirandata, err = GetParkiranFromID(mconn, collectionname, ID)
-	if err != nil {
-		resp.Message = err.Error()
-		return GCFReturnStruct(resp)
-	}
-
-	resp.Status = true
-	resp.Message = "Get Data Berhasil"
-	resp.Data = []Parkiran{*parkirandata}
-
-	return GCFReturnStruct(resp)
-}
+// func GCFGetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+// 	req := new(Response)
+// 	conn := SetConnection(MongoEnv, dbname)
+// 	tokenlogin := r.Header.Get("Login")
+// 	if tokenlogin == "" {
+// 		req.Status = false
+// 		req.Message = "Header Login Not Found"
+// 	} else {
+// 		// Dekode token untuk mendapatkan
+// 		_, err := DecodeGetParkiran(os.Getenv(PublicKey), tokenlogin)
+// 		if err != nil {
+// 			req.Status = false
+// 			req.Message = "Data Tersebut tidak ada" + tokenlogin
+// 		} else {
+// 			// Langsung ambil data catalog
+// 			dataparkiran := GetAllParkiran(conn, colname)
+// 			if dataparkiran == nil {
+// 				req.Status = false
+// 				req.Message = "Data Parkiran tidak ada"
+// 			} else {
+// 				req.Status = true
+// 				req.Message = "Data Parkiran berhasil diambil"
+// 				req.Data = dataparkiran
+// 			}
+// 		}
+// 	}
+// 	return ReturnStringStruct(req)
+// }

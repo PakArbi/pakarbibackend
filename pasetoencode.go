@@ -26,13 +26,13 @@ func Decoder(publickey, tokenstr string) (payload Payload, err error) {
 	return payload, err
 }
 
-func DecodeGetParkiran(PublicKey, tokenStr string) (pay string, err error) {
-	key, err := Decoder(PublicKey, tokenStr)
-	if err != nil {
-		fmt.Println("Cannot decode the token", err.Error())
-	}
-	return key.Parkiran, nil
-}
+// func DecodeGetParkiran(PublicKey, tokenStr string) (pay string, err error) {
+// 	key, err := Decoder(PublicKey, tokenStr)
+// 	if err != nil {
+// 		fmt.Println("Cannot decode the token", err.Error())
+// 	}
+// 	return key.Parkiran, nil
+// }
 
 func DecodeGetParkirans(PublicKey, tokenStr string) (pay string, err error) {
 	key, err := Decoder(PublicKey, tokenStr)
