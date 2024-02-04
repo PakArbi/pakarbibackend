@@ -76,6 +76,9 @@ func TestParkiran(t *testing.T) {
 	parkirandata.NamaKendaraan = "Supra X 125"
 	parkirandata.NomorKendaraan = "F 1234 NR"
 	parkirandata.JenisKendaraan = "Motor"
+	parkirandata.Status = true
+	parkirandata.JamMasuk = "09:00"
+	parkirandata.JamKeluar = "16:00"
 	CreateNewParkiran(mconn, "parkiran", parkirandata)
 }
 

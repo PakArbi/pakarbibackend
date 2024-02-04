@@ -558,7 +558,7 @@ func GetParkiranFromID(db *mongo.Database, col string, _id primitive.ObjectID) (
 func GenerateQRCodeBase64WithoutLogo(dataparkiran Parkiran, mconn *mongo.Database, collparkiran string) (string, error) {
     // Construct the data to be encoded in the QR code
     qrCodeData := fmt.Sprintf(
-        "Parkiran ID: %s\nNama: %s\nNPM: %s\nProdi: %s\nNama Kendaraan: %s\nNomor Kendaraan: %s\nJenis Kendaraan: %s\nJam Masuk: %s\nJam Keluar: %s\nStatus: %s",
+        // "Parkiran ID: %s\nNama: %s\nNPM: %s\nProdi: %s\nNama Kendaraan: %s\nNomor Kendaraan: %s\nJenis Kendaraan: %s\nJam Masuk: %s\nJam Keluar: %s\nStatus: %s",
         dataparkiran.Parkiranid,
         dataparkiran.Nama,
         dataparkiran.NPM,
