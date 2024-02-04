@@ -14,12 +14,12 @@ import (
 
 func TestCreateNewUserRole(t *testing.T) {
 	var userdata User
-	userdata.UsernameId = "D4TI1214000"
-	userdata.Username = "ULBICAMPUS"
-	userdata.NPM = "1214000"
-	userdata.Password = "ulbipass"
-	userdata.PasswordHash = "ulbipass"
-	userdata.Email = "1214000@std.ulbi.ac.id"
+	userdata.UsernameId = "D41214020"
+	userdata.Username = "farhanrizki"
+	userdata.NPM = "1214010"
+	userdata.Password = "olkiu567"
+	userdata.PasswordHash = "olkiu567"
+	userdata.Email = "1214020@std.ulbi.ac.id"
 	userdata.Role = "user"
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	CreateNewUserRole(mconn, "user", userdata)
@@ -34,12 +34,12 @@ func TestCreateNewUserRole(t *testing.T) {
 
 func CreateNewUserToken(t *testing.T) {
 	var userdata User
-	userdata.UsernameId = "D4TI1214000"
-	userdata.Username = "ULBICAMPUS"
-	userdata.NPM = "1214000"
-	userdata.Password = "ulbipass"
-	userdata.PasswordHash = "ulbipass"
-	userdata.Email = "1214000@std.ulbi.ac.id"
+	userdata.UsernameId = "D41214020"
+	userdata.Username = "farhanrizki"
+	userdata.NPM = "1214020"
+	userdata.Password = "olkiu567"
+	userdata.PasswordHash = "olkiu567"
+	userdata.Email = "1214020@std.ulbi.ac.id"
 	userdata.Role = "user"
 
 	// Create a MongoDB connection
@@ -56,12 +56,12 @@ func CreateNewUserToken(t *testing.T) {
 func TestGFCPostHandlerUser(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.UsernameId = "D4TI1214000"
-	userdata.Username = "ULBICAMPUS"
-	userdata.NPM = "1214000"
-	userdata.Password = "ulbipass"
-	userdata.PasswordHash = "ulbipass"
-	userdata.Email = "1214000@std.ulbi.ac.id"
+	userdata.UsernameId = "D41214020"
+	userdata.Username = "farhanrizki"
+	userdata.NPM = "1214020"
+	userdata.Password = "olkiu567"
+	userdata.PasswordHash = "olkiu567"
+	userdata.Email = "1214020@std.ulbi.ac.id"
 	userdata.Role = "user"
 	CreateNewUserRole(mconn, "user", userdata)
 }
@@ -69,13 +69,13 @@ func TestGFCPostHandlerUser(t *testing.T) {
 func TestParkiran(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var parkirandata Parkiran
-	parkirandata.Parkiranid = "D41214000"
-	parkirandata.Nama = "ULBI"
-	parkirandata.NPM = "1214000"
+	parkirandata.Parkiranid = "D41214020"
+	parkirandata.Nama = "Farhan Rizki M"
+	parkirandata.NPM = "1214020"
 	parkirandata.Prodi = "D4 Teknik Informatika"
-	parkirandata.NamaKendaraan = "ULBI BUS"
-	parkirandata.NomorKendaraan = "D 1234 NR"
-	parkirandata.JenisKendaraan = "Mobil"
+	parkirandata.NamaKendaraan = "Supra X 125"
+	parkirandata.NomorKendaraan = "F 1234 NR"
+	parkirandata.JenisKendaraan = "Motor"
 	CreateNewParkiran(mconn, "parkiran", parkirandata)
 }
 
@@ -86,7 +86,7 @@ func TestAllParkiran(t *testing.T) {
 }
 
 func TestGeneratePasswordHash(t *testing.T) {
-	passwordhash := "ulbipass"
+	passwordhash := "olkiu567"
 	hash, _ := HashPass(passwordhash) // ignore error for the sake of simplicity
 
 	fmt.Println("Password:", passwordhash)
@@ -98,15 +98,15 @@ func TestGeneratePrivateKeyPaseto(t *testing.T) {
 	privateKey, publicKey := watoken.GenerateKey()
 	fmt.Println(privateKey)
 	fmt.Println(publicKey)
-	hasil, err := watoken.Encode("ulbipass", privateKey)
+	hasil, err := watoken.Encode("olkiu567", privateKey)
 	fmt.Println(hasil, err)
 }
 
 func TestHashFunction(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.NPM = "1214000"
-	userdata.PasswordHash = "ulbipass"
+	userdata.NPM = "1214020"
+	userdata.PasswordHash = "olkiu567"
 
 	filter := bson.M{"npm": userdata.NPM}
 	res := atdb.GetOneDoc[User](mconn, "user", filter)
@@ -121,8 +121,8 @@ func TestHashFunction(t *testing.T) {
 func TestIsPasswordValid(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.NPM = "1214000"
-	userdata.PasswordHash = "ulbipass"
+	userdata.NPM = "1214020"
+	userdata.PasswordHash = "olkiu567"
 
 	anu := IsPasswordValidNPM(mconn, "user", userdata)
 	fmt.Println(anu)
@@ -131,12 +131,12 @@ func TestIsPasswordValid(t *testing.T) {
 func TestUserFix(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.UsernameId = "D4TI1214000"
-	userdata.Username = "ULBICAMPUS"
-	userdata.NPM = "1214000"
-	userdata.Password = "ulbipass"
-	userdata.PasswordHash = "ulbipass"
-	userdata.Email = "1214000@std.ulbi.ac.id"
+	userdata.UsernameId = "D4TI1214020"
+	userdata.Username = "farhanrizki"
+	userdata.NPM = "1214020"
+	userdata.Password = "olkiu567"
+	userdata.PasswordHash = "olkiu567"
+	userdata.Email = "1214020@std.ulbi.ac.id"
 	userdata.Role = "user"
 	CreateUser(mconn, "user", userdata)
 }
@@ -164,8 +164,8 @@ func TestGeneratePrivateKeyPasetoAdmin(t *testing.T) {
 func TestLoginn(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.NPM = "1214000"
-	userdata.PasswordHash = "ulbipass"
+	userdata.NPM = "1214020"
+	userdata.PasswordHash = "olkiu567"
 	IsPasswordValidNPM(mconn, "user", userdata)
 	fmt.Println(userdata)
 }

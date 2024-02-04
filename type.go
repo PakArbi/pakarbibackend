@@ -41,7 +41,7 @@ type Parkiran struct {
 	NamaKendaraan  string             `json:"namakendaraan,omitempty" bson:"namakendaraan,omitempty"`
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
-	Status         bool               `json:"status, omitempty" bson:"status,omitempty"`
+	Status         string             `json:"status, omitempty" bson:"status,omitempty"`
 	JamMasuk       string             `json:"jammasuk, omitempty" bson:"jammasuk,omitempty"`
 	JamKeluar      string             `json:"jamkeluar, omitempty" bson:"jamkeluar,omitempty"`
 	Base64Image    string             `json:"base64image,omitempty" bson:"base64image,omitempty"`
