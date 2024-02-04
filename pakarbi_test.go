@@ -131,7 +131,7 @@ func TestIsPasswordValid(t *testing.T) {
 func TestUserFix(t *testing.T) {
 	mconn := SetConnection("MONGOSTRING", "PakArbiApp")
 	var userdata User
-	userdata.UsernameId = "D4TI1214020"
+	userdata.UsernameId = "D41214020"
 	userdata.Username = "farhanrizki"
 	userdata.NPM = "1214020"
 	userdata.Password = "olkiu567"
