@@ -41,7 +41,7 @@ type Parkiran struct {
 	NamaKendaraan  string             `json:"namakendaraan,omitempty" bson:"namakendaraan,omitempty"`
 	NomorKendaraan string             `json:"nomorkendaraan,omitempty" bson:"nomorkendaraan,omitempty"`
 	JenisKendaraan string             `json:"jeniskendaraan,omitempty" bson:"jeniskendaraan,omitempty"`
-	Status         string             `json:"status, omitempty" bson:"status,omitempty"`
+	Status         bool               `json:"status, omitempty" bson:"status,omitempty"`
 	JamMasuk       string             `json:"jammasuk, omitempty" bson:"jammasuk,omitempty"`
 	JamKeluar      string             `json:"jamkeluar, omitempty" bson:"jamkeluar,omitempty"`
 	Base64Image    string             `json:"base64image,omitempty" bson:"base64image,omitempty"`
@@ -53,19 +53,19 @@ type RequestParkiran struct {
 }
 
 type Credential struct {
-	Status  bool       `json:"status" bson:"status"`
-	Token   string     `json:"token,omitempty" bson:"token,omitempty"`
-	Message string     `json:"message,omitempty" bson:"message,omitempty"`
+	Status  bool   `json:"status" bson:"status"`
+	Token   string `json:"token,omitempty" bson:"token,omitempty"`
+	Message string `json:"message,omitempty" bson:"message,omitempty"`
 	// Data    string     `json:"data,omitempty" bson:"data,omitempty"`
-	Data1   []Parkiran `bson:"data,omitempty" json:"data,omitempty"`
+	Data1       []Parkiran `bson:"data,omitempty" json:"data,omitempty"`
 	Base64Image string     `json:"base64Image,omitempty" bson:"base64Image,omitempty"`
 }
 
 type Response struct {
-	Status  bool        `json:"status" bson:"status"`
-	Message string      `json:"message" bson:"message"`
-	Data    interface{} `json:"data" bson:"data"`
-	Base64Image string     `json:"base64image,omitempty" bson:"base64image,omitempty"`
+	Status      bool        `json:"status" bson:"status"`
+	Message     string      `json:"message" bson:"message"`
+	Data        interface{} `json:"data" bson:"data"`
+	Base64Image string      `json:"base64image,omitempty" bson:"base64image,omitempty"`
 }
 
 type ResponseParkiran struct {
