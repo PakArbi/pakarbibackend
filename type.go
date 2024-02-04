@@ -57,7 +57,7 @@ type Credential struct {
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 	// Data    string     `json:"data,omitempty" bson:"data,omitempty"`
-	Data1       []Parkiran `bson:"data,omitempty" json:"data,omitempty"`
+	Data       []Parkiran `bson:"data,omitempty" json:"data,omitempty"`
 	Base64Image string     `json:"base64Image,omitempty" bson:"base64Image,omitempty"`
 }
 

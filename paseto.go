@@ -698,7 +698,7 @@ func GetIDDataParkiran(MONGOCONNSTRINGENV, dbname, collectionname string, r *htt
 
 	resp.Status = true
 	resp.Message = "Get Data Berhasil"
-	resp.Data1 = []Parkiran{*parkirandata}
+	resp.Data = []Parkiran{*parkirandata}
 
 	return GCFReturnStruct(resp)
 }
