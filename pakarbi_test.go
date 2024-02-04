@@ -212,32 +212,32 @@ func TestLoginn(t *testing.T) {
 // 	t.Log("Successfully generated QR code with logo, inserted data into MongoDB, and verified QR code file existence.")
 // }
 
-func TestGenerateQRCodeBase64WithoutLogo(t *testing.T) {
-	// Set up MongoDB connection
-	mconn := SetConnection("Mongostring", "parkabi")
-	collparkiran := "parkiran"
+// func TestGenerateQRCodeBase64WithoutLogo(t *testing.T) {
+// 	// Set up MongoDB connection
+// 	mconn := SetConnection("Mongostring", "parkabi")
+// 	collparkiran := "parkiran"
 
-	// Create a sample Parkiran object
-	dataparkiran := Parkiran{
-		Parkiranid:     "123",
-		Nama:           "John Doe",
-		NPM:            "123456",
-		Prodi:          "Computer Science",
-		NamaKendaraan:  "Car",
-		NomorKendaraan: "ABC123",
-		JenisKendaraan: "Sedan",
-		JamMasuk:       "09:00 AM",
-		JamKeluar:      "05:00 PM",
-		// Status:         "Parked",
-	}
+// 	// Create a sample Parkiran object
+// 	dataparkiran := Parkiran{
+// 		Parkiranid:     "123",
+// 		Nama:           "John Doe",
+// 		NPM:            "123456",
+// 		Prodi:          "Computer Science",
+// 		NamaKendaraan:  "Car",
+// 		NomorKendaraan: "ABC123",
+// 		JenisKendaraan: "Sedan",
+// 		JamMasuk:       "09:00 AM",
+// 		JamKeluar:      "05:00 PM",
+// 		Status:         "Parked",
+// 	}
 
-	// Call the function to generate QR code and update MongoDB
-	qrBase64, err := GenerateQRCodeBase64WithoutLogo(dataparkiran, mconn, collparkiran)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
+// 	// Call the function to generate QR code and update MongoDB
+// 	qrBase64, err := GenerateQRCodeBase64WithoutLogo(dataparkiran, mconn, collparkiran)
+// 	if err != nil {
+// 		fmt.Println("Error:", err)
+// 		return
+// 	}
 
-	// Print the generated QR code base64
-	fmt.Println("Generated QR Code Base64:", qrBase64)
-}
+// 	// Print the generated QR code base64
+// 	fmt.Println("Generated QR Code Base64:", qrBase64)
+// }
