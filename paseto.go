@@ -350,6 +350,35 @@ func GCFGenerateDeleteQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpa
 	return GCFReturnStruct(response)
 }
 
+func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Request) string {
+	req := new(Response)
+	conn := SetConnection(MongoEnv, dbname)
+	tokenlogin := r.Header.Get("Login")
+	if tokenlogin == "" {
+		req.Status = false
+		req.Message = "Header Login Not Found"
+	} else {
+		// Dekode token untuk mendapatkan
+		_, err := DecodeGetParkirans(os.Getenv(PublicKey), tokenlogin)
+		if err != nil {
+			req.Status = false
+			req.Message = "Data Tersebut tidak ada" + tokenlogin
+		} else {
+			// Langsung ambil data user
+			dataparkiran := GetAllParkirans(conn, colname)
+			if dataparkiran == nil {
+				req.Status = false
+				req.Message = "Data User tidak ada"
+			} else {
+				req.Status = true
+				req.Message = "Data User berhasil diambil"
+				req.Data = dataparkiran
+			}
+		}
+	}
+	return ReturnStringStruct(req)
+}
+
 // // <--function generate code qr 2-->
 // func GCFGenerateCodeQREmail(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
 // 	var response Credential

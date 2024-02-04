@@ -383,6 +383,10 @@ func GetAllUser(mongoconn *mongo.Database, collection string) []User {
 	return user
 }
 
+func GetAllParkirans(mongoconn *mongo.Database, collection string) []Parkiran {
+	parkiran := atdb.GetAllDoc[[]Parkiran](mongoconn, collection)
+	return parkiran
+}
 // <--- FUNCTION ADMIN --->
 
 func CreateNewAdminRole(mongoconn *mongo.Database, collection string, admindata Admin) interface{} {
