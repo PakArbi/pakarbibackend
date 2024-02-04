@@ -368,50 +368,15 @@ func GetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.Req
 			dataparkiran := GetAllParkirans(conn, colname)
 			if dataparkiran == nil {
 				req.Status = false
-				req.Message = "Data Parkiran tidak ada"
+				req.Message = "Data User tidak ada"
 			} else {
 				req.Status = true
-				req.Message = "Data Parkiran berhasil diambil"
+				req.Message = "Data User berhasil diambil"
 				req.Data = dataparkiran
 			}
 		}
 	}
 	return ReturnStringStruct(req)
-}
-
-func GetIDDataParkiran(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
-	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
-	resp := new(Credential)
-	parkirandata := new(Parkiran)
-	resp.Status = false
-	err := json.NewDecoder(r.Body).Decode(&parkirandata)
-
-	id := r.URL.Query().Get("_id")
-	if id == "" {
-		resp.Message = "Missing '_id' parameter in the URL"
-		return GCFReturnStruct(resp)
-	}
-
-	ID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		resp.Message = "Invalid '_id' parameter in the URL"
-		return GCFReturnStruct(resp)
-	}
-
-	parkirandata.ID = ID
-
-	// Menggunakan fungsi GetProdukFromID untuk mendapatkan data produk berdasarkan ID
-	parkirandata, err = GetParkiranFromID(mconn, collectionname, ID)
-	if err != nil {
-		resp.Message = err.Error()
-		return GCFReturnStruct(resp)
-	}
-
-	resp.Status = true
-	resp.Message = "Get Data Berhasil"
-	resp.Data = []Parkiran{*parkirandata}
-
-	return GCFReturnStruct(resp)
 }
 
 // // <--function generate code qr 2-->
@@ -730,4 +695,39 @@ func GCFGetAllDataParkiran(PublicKey, MongoEnv, dbname, colname string, r *http.
 		}
 	}
 	return ReturnStringStruct(req)
+}
+
+func GetIDDataParkiran(MONGOCONNSTRINGENV, dbname, collectionname string, r *http.Request) string {
+	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
+	resp := new(Credential)
+	parkirandata := new(Parkiran)
+	resp.Status = false
+	err := json.NewDecoder(r.Body).Decode(&parkirandata)
+
+	id := r.URL.Query().Get("_id")
+	if id == "" {
+		resp.Message = "Missing '_id' parameter in the URL"
+		return GCFReturnStruct(resp)
+	}
+
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		resp.Message = "Invalid '_id' parameter in the URL"
+		return GCFReturnStruct(resp)
+	}
+
+	parkirandata.ID = ID
+
+	// Menggunakan fungsi GetProdukFromID untuk mendapatkan data produk berdasarkan ID
+	parkirandata, err = GetParkiranFromID(mconn, collectionname, ID)
+	if err != nil {
+		resp.Message = err.Error()
+		return GCFReturnStruct(resp)
+	}
+
+	resp.Status = true
+	resp.Message = "Get Data Berhasil"
+	resp.Data = []Parkiran{*parkirandata}
+
+	return GCFReturnStruct(resp)
 }
