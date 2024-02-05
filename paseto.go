@@ -257,7 +257,7 @@ func GCFInsertGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpa
 }
 
 func GCFGenerateUpdateCodeQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collparkiran string, r *http.Request) string {
-	var response Credential
+	var response Response
 	response.Status = false
 	mconn := SetConnection(MONGOCONNSTRINGENV, dbname)
 	var userdata User
