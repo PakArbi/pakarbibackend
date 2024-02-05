@@ -387,6 +387,7 @@ func GetAllParkirans(mongoconn *mongo.Database, collection string) []Parkiran {
 	parkiran := atdb.GetAllDoc[[]Parkiran](mongoconn, collection)
 	return parkiran
 }
+
 // <--- FUNCTION ADMIN --->
 
 func CreateNewAdminRole(mongoconn *mongo.Database, collection string, admindata Admin) interface{} {
@@ -499,7 +500,6 @@ func DeleteQRCodeData2(mconn *mongo.Database, collparkiran, parkiranID string) e
 	return nil
 }
 
-
 func UpdateParkiran(mconn *mongo.Database, collparkiran string, newData Parkiran) error {
 	update := bson.D{{Key: "$set", Value: newData}}
 	_, err := mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": newData.Parkiranid}, update)
@@ -553,48 +553,46 @@ func GetParkiranFromID(db *mongo.Database, col string, _id primitive.ObjectID) (
 	return reportlist, nil
 }
 
-
-//Percobaan ganti alurnya untuk Generate code qr ketika sudah inputkan datanya
+// Percobaan ganti alurnya untuk Generate code qr ketika sudah inputkan datanya
 func GenerateQRCodeBase64WithoutLogo(dataparkiran Parkiran, mconn *mongo.Database, collparkiran string) (string, error) {
-    // Construct the data to be encoded in the QR code
-    qrCodeData := fmt.Sprintf(
-        // "Parkiran ID: %s\nNama: %s\nNPM: %s\nProdi: %s\nNama Kendaraan: %s\nNomor Kendaraan: %s\nJenis Kendaraan: %s\nJam Masuk: %s\nJam Keluar: %s\nStatus: %s",
-        dataparkiran.Parkiranid,
-        dataparkiran.Nama,
-        dataparkiran.NPM,
-        dataparkiran.Prodi,
-        dataparkiran.NamaKendaraan,
-        dataparkiran.NomorKendaraan,
-        dataparkiran.JenisKendaraan,
-        dataparkiran.JamMasuk,
-        dataparkiran.JamKeluar,
-        dataparkiran.Status,
-    )
+	// Construct the data to be encoded in the QR code
+	qrCodeData := fmt.Sprintf(
+		// "Parkiran ID: %s\nNama: %s\nNPM: %s\nProdi: %s\nNama Kendaraan: %s\nNomor Kendaraan: %s\nJenis Kendaraan: %s\nJam Masuk: %s\nJam Keluar: %s\nStatus: %s",
+		dataparkiran.Parkiranid,
+		dataparkiran.Nama,
+		dataparkiran.NPM,
+		dataparkiran.Prodi,
+		dataparkiran.NamaKendaraan,
+		dataparkiran.NomorKendaraan,
+		dataparkiran.JenisKendaraan,
+		dataparkiran.JamMasuk,
+		dataparkiran.JamKeluar,
+		dataparkiran.Status,
+	)
 
-    // Generate QR code
-    qrCode, err := generateQRCode(qrCodeData)
-    if err != nil {
-        return "", fmt.Errorf("failed to generate QR code: %v", err)
-    }
+	// Generate QR code
+	qrCode, err := generateQRCode(qrCodeData)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate QR code: %v", err)
+	}
 
-    // Resize the QR code image
-    qrCode = resize.Resize(256, 256, qrCode, resize.Lanczos3)
+	// Resize the QR code image
+	qrCode = resize.Resize(1080, 1080, qrCode, resize.Lanczos3)
 
-    // Convert the QR code image to base64
-    qrBase64, err := imageToBase64(qrCode)
-    if err != nil {
-        return "", fmt.Errorf("failed to convert QR code image to base64: %v", err)
-    }
+	// Convert the QR code image to base64
+	qrBase64, err := imageToBase64(qrCode)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert QR code image to base64: %v", err)
+	}
 
-    // Update data Parkiran dengan gambar Base64
-    update := bson.D{{Key: "$set", Value: bson.D{
-        {Key: "base64Image", Value: qrBase64},
-    }}}
-    _, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
-    if err != nil {
-        return "", fmt.Errorf("failed to update Parkiran data with base64 image: %v", err)
-    }
+	// Update data Parkiran dengan gambar Base64
+	update := bson.D{{Key: "$set", Value: bson.D{
+		{Key: "base64Image", Value: qrBase64},
+	}}}
+	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
+	if err != nil {
+		return "", fmt.Errorf("failed to update Parkiran data with base64 image: %v", err)
+	}
 
-    return qrBase64, nil
+	return qrBase64, nil
 }
-
