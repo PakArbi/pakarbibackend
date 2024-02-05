@@ -8,12 +8,11 @@ import (
 	"errors"
 	"fmt"
 	"image"
-	"image/color"
-	"image/draw"
 	"image/png"
 	"os"
 	"path/filepath"
 
+	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
 	"github.com/disintegration/imaging"
 	"github.com/nfnt/resize"
@@ -638,67 +637,18 @@ func GenerateQRCodeBase64WithoutLogo(dataparkiran Parkiran, mconn *mongo.Databas
 	return qrBase64, nil
 }
 
-func GenerateQRCodeBase64WithWhiteBackground(dataparkiran Parkiran, mconn *mongo.Database, collparkiran string) (string, error) {
-	// Construct the data to be encoded in the QR code
-	qrCodeData := fmt.Sprintf(
-		dataparkiran.Parkiranid,
-		dataparkiran.Nama,
-		dataparkiran.NPM,
-		dataparkiran.Prodi,
-		dataparkiran.NamaKendaraan,
-		dataparkiran.NomorKendaraan,
-		dataparkiran.JenisKendaraan,
-		dataparkiran.JamMasuk,
-		dataparkiran.JamKeluar,
-		dataparkiran.Status,
-	)
-
-	// Generate QR code with white background
-	qrCode, err := generateQRCodeWithWhiteBackground(qrCodeData)
-	if err != nil {
-		return "", fmt.Errorf("failed to generate QR code with white background: %v", err)
-	}
-
-	// Convert the QR code image to base64
-	qrBase64, err := imageToBase64(qrCode)
-	if err != nil {
-		return "", fmt.Errorf("failed to convert QR code image to base64: %v", err)
-	}
-
-	// Update data Parkiran dengan gambar Base64
-	update := bson.D{{Key: "$set", Value: bson.D{
-		{Key: "base64Image", Value: qrBase64},
-	}}}
-	_, err = mconn.Collection(collparkiran).UpdateOne(context.TODO(), bson.M{"parkiranid": dataparkiran.Parkiranid}, update)
-	if err != nil {
-		return "", fmt.Errorf("failed to update Parkiran data with base64 image: %v", err)
-	}
-
-	return qrBase64, nil
-}
-
-func generateQRCodeWithWhiteBackground(data string) (image.Image, error) {
-	// Generate QR code without any background color
-	qrCode, err := generateQRCode(data)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create an image with a white background
-	img := image.NewRGBA(qrCode.Bounds())
-	draw.Draw(img, img.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Over)
-
-	// Draw the QR code on the white background
-	draw.Draw(img, qrCode.Bounds(), qrCode, image.Point{}, draw.Over)
-
-	return img, nil
-}
-
 func generateQRCode(data string) (image.Image, error) {
 	qrCode, err := qr.Encode(data, qr.M, qr.Auto)
 	if err != nil {
 		return nil, err
 	}
+
+	// Menyesuaikan ukuran gambar
+	qrCode, err = barcode.Scale(qrCode, 512, 512)
+	if err != nil {
+		return nil, err
+	}
+
 	return qrCode, nil
 }
 

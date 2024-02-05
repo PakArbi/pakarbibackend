@@ -239,7 +239,7 @@ func GCFInsertGenerateQR(publickey, MONGOCONNSTRINGENV, dbname, colluser, collpa
 
 					// Generate QR code without logo and return base64 encoding
 					// Pass mconn and collparkiran as additional parameters
-					qrCodeBase64, err := GenerateQRCodeBase64WithWhiteBackground(dataparkiran, mconn, collparkiran)
+					qrCodeBase64, err := GenerateQRCodeBase64WithoutLogo(dataparkiran, mconn, collparkiran)
 					if err != nil {
 						response.Message = "Error generating QR code: " + err.Error()
 					} else {
